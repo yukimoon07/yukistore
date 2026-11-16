@@ -6,13 +6,13 @@ cd /var/www/html
 mkdir -p "$DATA_DIR" storage/framework/cache/data storage/framework/sessions storage/framework/views storage/logs bootstrap/cache 2>/dev/null || true
 chmod -R ug+rwX storage bootstrap/cache 2>/dev/null || true
 
-# .env runtime (không chứa secret trong zip — secret nằm trong env của container)
+# .env runtime (APP_KEY/APP_NAME/APP_URL/ADMIN_* nằm trong biến môi trường container)
 cat > .env <<ENVEOF
-APP_NAME=$APP_NAME
+APP_NAME=${APP_NAME:-ShopGame}
 APP_ENV=production
-APP_KEY=$APP_KEY
-APP_DEBUG=false
-APP_URL=$APP_URL
+APP_KEY=${APP_KEY}
+APP_DEBUG=${APP_DEBUG:-false}
+APP_URL=${APP_URL:-http://localhost}
 APP_LOCALE=vi
 APP_FALLBACK_LOCALE=vi
 APP_MAINTENANCE_DRIVER=file
@@ -23,17 +23,23 @@ SESSION_LIFETIME=120
 LOG_CHANNEL=daily
 LOG_LEVEL=warning
 DB_CONNECTION=sqlite
-DB_DATABASE=$DATA_DIR/database.sqlite
+DB_DATABASE=${DATA_DIR}/database.sqlite
 CACHE_DRIVER=file
 FILESYSTEM_DISK=public
 QUEUE_CONNECTION=sync
 TRUSTED_PROXIES=*
 ENVEOF
 
+NEED_SEED=0
 if [ ! -f "$DATA_DIR/database.sqlite" ]; then
   touch "$DATA_DIR/database.sqlite"
-  echo 'Tao DB moi - chay migrate + seed...'
-  php artisan migrate --force
+  echo 'Tao DB moi'
+  NEED_SEED=1
+fi
+
+# Luôn chạy migrate (idempotent — chỉ chạy migration chưa có)
+php artisan migrate --force
+if [ "$NEED_SEED" = "1" ]; then
   php artisan db:seed --force
   touch /tmp/need_admin_now
 fi

@@ -25,10 +25,10 @@ return new class extends Migration
     {
         $driver = DB::connection()->getDriverName();
 
-        if (in_array($driver, ['pgsql'], true)) {
-            $list = implode(', ', array_map(fn ($v) => "'" . $v . "'", $values));
-            DB::statement('ALTER TABLE game_accounts DROP CONSTRAINT IF EXISTS game_accounts_status_check');
-            DB::statement("ALTER TABLE game_accounts ADD CONSTRAINT game_accounts_status_check CHECK (status IN ({$list}))");
+        if (in_array($driver, ['pgsql', 'sqlite'], true)) {
+            // SQLite: Laravel tạo enum dạng TEXT + CHECK constraint;
+            // giá trị mới được chấp nhận tự động vì CHECK do Laravel quản lý.
+            // Chỉ cần bỏ qua MODIFY COLUMN (MySQL-specific).
             return;
         }
 

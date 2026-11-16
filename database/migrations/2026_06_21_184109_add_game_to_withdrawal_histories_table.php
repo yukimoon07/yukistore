@@ -13,7 +13,6 @@ return new class extends Migration
     {
         Schema::table('withdrawal_histories', function (Blueprint $table) {
             $table->string('game')->nullable();
-            $table->string('server')->nullable();
         });
     }
 
@@ -24,7 +23,6 @@ return new class extends Migration
     {
         Schema::table('withdrawal_histories', function (Blueprint $table) {
             $table->dropColumn('game');
-            $table->integer('server')->nullable(false);
         });
     }
 };

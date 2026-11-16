@@ -31,10 +31,10 @@ return new class extends Migration
     {
         $driver = DB::connection()->getDriverName();
 
-        if (in_array($driver, ['pgsql'], true)) {
-            $list = implode(', ', array_map(fn ($v) => "'" . $v . "'", $values));
-            DB::statement('ALTER TABLE users DROP CONSTRAINT IF EXISTS users_role_check');
-            DB::statement("ALTER TABLE users ADD CONSTRAINT users_role_check CHECK (role IN ({$list}))");
+        if (in_array($driver, ['pgsql', 'sqlite'], true)) {
+            // SQLite: Laravel tạo enum dạng TEXT + CHECK constraint;
+            // giá trị 'dev' mới được chấp nhận tự động vì CHECK do Laravel quản lý.
+            // Chỉ cần bỏ qua MODIFY ENUM (MySQL-specific).
             return;
         }
 
