@@ -1,0 +1,50 @@
+#!/bin/sh
+set -e
+cd /var/www/html
+
+: ${DATA_DIR:=/data}
+mkdir -p "$DATA_DIR" storage/framework/cache/data storage/framework/sessions storage/framework/views storage/logs bootstrap/cache 2>/dev/null || true
+chmod -R ug+rwX storage bootstrap/cache 2>/dev/null || true
+
+# .env runtime (không chứa secret trong zip — secret nằm trong env của container)
+cat > .env <<ENVEOF
+APP_NAME=$APP_NAME
+APP_ENV=production
+APP_KEY=$APP_KEY
+APP_DEBUG=false
+APP_URL=$APP_URL
+APP_LOCALE=vi
+APP_FALLBACK_LOCALE=vi
+APP_MAINTENANCE_DRIVER=file
+SESSION_SECURE_COOKIE=true
+SESSION_SAME_SITE=lax
+SESSION_DRIVER=file
+SESSION_LIFETIME=120
+LOG_CHANNEL=daily
+LOG_LEVEL=warning
+DB_CONNECTION=sqlite
+DB_DATABASE=$DATA_DIR/database.sqlite
+CACHE_DRIVER=file
+FILESYSTEM_DISK=public
+QUEUE_CONNECTION=sync
+TRUSTED_PROXIES=*
+ENVEOF
+
+if [ ! -f "$DATA_DIR/database.sqlite" ]; then
+  touch "$DATA_DIR/database.sqlite"
+  echo 'Tao DB moi - chay migrate + seed...'
+  php artisan migrate --force
+  php artisan db:seed --force
+  touch /tmp/need_admin_now
+fi
+
+php artisan storage:link >/dev/null 2>&1 || true
+php artisan config:cache >/dev/null
+php artisan route:cache >/dev/null 2>&1 || true
+php artisan view:cache >/dev/null 2>&1 || true
+
+if [ -f /tmp/need_admin_now ]; then
+  php artisan admin:create-admin --username="$ADMIN_USERNAME" --email="$ADMIN_EMAIL" --password="$ADMIN_PASSWORD" --no-confirm || echo 'warning: tao admin that bai'
+fi
+
+exec php artisan serve --host=0.0.0.0 --port="$PORT"

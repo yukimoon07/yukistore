@@ -1,0 +1,1173 @@
+/**
+ * ShopGame UI Design System — v2
+ * Dành cho trang khách hàng (user-facing).
+ *
+ * Hướng thẩm mỹ: Light làm mặc định + toggle Dark.
+ * - Một điểm nhấn duy nhất: hero section (gradient overlay + fade-in).
+ * - Không dùng numbered markers, không ALL-CAPS eyebrow, không tinted near-black làm nền mặc định.
+ * - Typography một gia đình (Inter), phân cấp rõ qua trọng lượng và cỡ chữ.
+ * - Tất cả màu sắc dùng CSS biến, tuỳ theo data-theme="light" | "dark".
+ */
+
+/* ==========================================================
+   1. DESIGN TOKENS — LIGHT (mặc định)
+   ========================================================== */
+:root {
+    /* Màu nền */
+    --sg-bg-base: #fafafa;
+    --bg-base: var(--sg-bg-base);
+    --sg-bg-surface: #ffffff;
+    --bg-surface: var(--sg-bg-surface);
+    --sg-bg-card: #ffffff;
+    --bg-card: var(--sg-bg-card);
+    --sg-bg-card-hover: #f3f4f6;
+    --bg-card-hover: var(--sg-bg-card-hover);
+    --sg-bg-input: #f8fafc;
+    --bg-input: var(--sg-bg-input);
+    --sg-bg-body: #fafafa;
+
+    /* Viền */
+    --sg-border-subtle: #e2e8f0;
+    --border-subtle: var(--sg-border-subtle);
+    --sg-border-card: #e2e8f0;
+    --border-card: var(--sg-border-card);
+    --sg-border-card-hover: #4f46e5;
+    --border-card-hover: var(--sg-border-card-hover);
+    --sg-border-glow: rgba(79, 70, 229, 0.20);
+    --border-glow: var(--sg-border-glow);
+
+    /* Chữ */
+    --sg-text-primary: #0f172a;
+    --text-primary: var(--sg-text-primary);
+    --sg-text-secondary: #475569;
+    --text-secondary: var(--sg-text-secondary);
+    --sg-text-muted: #94a3b8;
+    --text-muted: var(--sg-text-muted);
+    --sg-text-inverse: #ffffff;
+
+    /* Accent (giữ nguyên tông gaming hiện có) */
+    --sg-accent-indigo: #4f46e5;
+    --accent-indigo: var(--sg-accent-indigo);
+    --sg-accent-cyan: #06b6d4;
+    --accent-cyan: var(--sg-accent-cyan);
+    --sg-accent-amber: #f59e0b;
+    --accent-amber: var(--sg-accent-amber);
+    --sg-accent-crimson: #ef4444;
+    --accent-crimson: var(--sg-accent-crimson);
+    --sg-accent-emerald: #10b981;
+    --accent-emerald: var(--sg-accent-emerald);
+
+    /* Gradient */
+    --sg-gradient-primary: linear-gradient(135deg, #4f46e5 0%, #06b6d4 100%);
+    --gradient-primary: var(--sg-gradient-primary);
+    --sg-gradient-fire: linear-gradient(135deg, #ef4444 0%, #f59e0b 100%);
+    --gradient-fire: var(--sg-gradient-fire);
+    --sg-gradient-card: linear-gradient(180deg, rgba(30, 41, 59, 0.05) 0%, rgba(15, 23, 42, 0.03) 100%);
+    --gradient-card: var(--sg-gradient-card);
+    --sg-gradient-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.6) 0%, rgba(255, 255, 255, 0.3) 100%);
+    --gradient-glass: var(--sg-gradient-glass);
+
+    /* Bóng đổ */
+    --sg-shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-sm: var(--sg-shadow-sm);
+    --sg-shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.08), 0 2px 4px -2px rgb(0 0 0 / 0.04);
+    --shadow-md: var(--sg-shadow-md);
+    --sg-shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.10), 0 4px 6px -4px rgb(0 0 0 / 0.06);
+    --shadow-lg: var(--sg-shadow-lg);
+    --sg-shadow-glow: 0 0 30px rgba(79, 70, 229, 0.18);
+    --shadow-glow: var(--sg-shadow-glow);
+
+    /* Bo tròn */
+    --sg-radius-sm: 8px;
+    --radius-sm: var(--sg-radius-sm);
+    --sg-radius-md: 12px;
+    --radius-md: var(--sg-radius-md);
+    --sg-radius-lg: 16px;
+    --radius-lg: var(--sg-radius-lg);
+    --sg-radius-xl: 20px;
+    --radius-xl: var(--sg-radius-xl);
+    --sg-radius-full: 9999px;
+    --radius-full: var(--sg-radius-full);
+
+    /* Hiệu ứng */
+    --sg-transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-fast: var(--sg-transition-fast);
+    --sg-transition-smooth: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-smooth: var(--sg-transition-smooth);
+
+    /* Z-index */
+    --sg-z-dropdown: 1000;
+    --sg-z-modal: 10000;
+    --sg-z-toast: 10001;
+}
+
+/* ==========================================================
+   1b. DESIGN TOKENS — DARK
+   ========================================================== */
+[data-theme="dark"] {
+    --sg-bg-base: #0b0f19;
+    --sg-bg-surface: #111827;
+    --sg-bg-card: #151d30;
+    --sg-bg-card-hover: #1c2742;
+    --sg-bg-input: #0e1526;
+    --sg-bg-body: #0b0f19;
+
+    --sg-border-subtle: rgba(255, 255, 255, 0.08);
+    --sg-border-card: #1f293d;
+    --sg-border-card-hover: #4f46e5;
+    --sg-border-glow: rgba(79, 70, 229, 0.30);
+
+    --sg-text-primary: #f8fafc;
+    --sg-text-secondary: #94a3b8;
+    --sg-text-muted: #64748b;
+    --sg-text-inverse: #0f172a;
+
+    --sg-shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.4);
+    --sg-shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.5), 0 2px 4px -2px rgb(0 0 0 / 0.3);
+    --sg-shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.6), 0 4px 6px -4px rgb(0 0 0 / 0.4);
+    --sg-shadow-glow: 0 0 30px rgba(79, 70, 229, 0.25);
+}
+
+/* ==========================================================
+   2. BASE
+   ========================================================== */
+html {
+    scroll-behavior: smooth;
+}
+body {
+    background-color: var(--bg-base) !important;
+    color: var(--text-primary) !important;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+    font-size: 1rem;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    margin: 0;
+}
+a {
+    color: inherit;
+    text-decoration: none;
+    transition: color var(--transition-fast);
+}
+button, input, select, textarea {
+    font-family: inherit;
+    font-size: inherit;
+}
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    border: 0;
+}
+
+/* ==========================================================
+   3. LAYOUT
+   ========================================================== */
+.sg-container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+}
+.sg-section {
+    padding: 4rem 0;
+}
+.sg-section--tight {
+    padding: 2.5rem 0;
+}
+.sg-section--hero {
+    padding: 0;
+}
+
+/* Typography scale */
+.sg-h1 {
+    font-size: 2.5rem;
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    margin: 0 0 1rem;
+    color: var(--text-primary);
+}
+.sg-h2 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+    margin: 0 0 1.25rem;
+    color: var(--text-primary);
+}
+.sg-h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    line-height: 1.35;
+    margin: 0 0 0.75rem;
+    color: var(--text-primary);
+}
+.sg-lead {
+    font-size: 1.125rem;
+    color: var(--text-secondary);
+    line-height: 1.7;
+    max-width: 62ch;
+}
+.sg-body {
+    color: var(--text-secondary);
+}
+.sg-caption {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+}
+.sg-small {
+    font-size: 0.8125rem;
+    color: var(--text-muted);
+}
+
+/* Không dùng ALL-CAPS eyebrow — dùng chữ thường, in đậm nhẹ */
+.sg-eyebrow {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--accent-cyan);
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+/* ==========================================================
+   4. BUTTONS
+   ========================================================== */
+.sg-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1.25rem;
+    border: none;
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    font-size: 0.9375rem;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    line-height: 1.2;
+}
+.sg-btn--primary {
+    background: var(--gradient-primary);
+    color: #ffffff;
+    box-shadow: 0 4px 14px rgba(6, 182, 212, 0.25);
+}
+.sg-btn--primary:hover {
+    filter: brightness(1.05);
+    box-shadow: 0 6px 20px rgba(6, 182, 212, 0.35);
+    transform: translateY(-1px);
+}
+.sg-btn--ghost {
+    background: var(--bg-card);
+    border: 1px solid var(--border-card);
+    color: var(--text-primary);
+}
+.sg-btn--ghost:hover {
+    background: var(--bg-card-hover);
+    border-color: var(--border-card-hover);
+    color: var(--accent-indigo);
+}
+.sg-btn--outline {
+    background: transparent;
+    border: 1px solid var(--border-card);
+    color: var(--text-primary);
+}
+.sg-btn--outline:hover {
+    border-color: var(--text-primary);
+    background: rgba(0, 0, 0, 0.02);
+}
+[data-theme="dark"] .sg-btn--outline:hover {
+    background: rgba(255, 255, 255, 0.03);
+}
+.sg-btn--sm {
+    padding: 0.4375rem 0.875rem;
+    font-size: 0.8125rem;
+}
+.sg-btn--lg {
+    padding: 0.875rem 1.75rem;
+    font-size: 1rem;
+}
+.sg-btn--full {
+    width: 100%;
+}
+
+/* ==========================================================
+   5. CARDS
+   ========================================================== */
+.sg-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-card);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    transition: transform var(--transition-smooth), box-shadow var(--transition-smooth), border-color var(--transition-fast);
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+.sg-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--border-card-hover);
+}
+.sg-card-media {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    overflow: hidden;
+    background: var(--bg-input);
+}
+.sg-card-media img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform var(--transition-smooth);
+}
+.sg-card:hover .sg-card-media img {
+    transform: scale(1.04);
+}
+.sg-card-body {
+    padding: 1rem;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+.sg-card-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0 0 0.5rem;
+    line-height: 1.3;
+}
+.sg-card-desc {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    margin: 0 0 1rem;
+    line-height: 1.5;
+    flex-grow: 1;
+}
+.sg-card-footer {
+    padding: 1rem;
+    border-top: 1px solid var(--border-subtle);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+/* Badge trong card */
+.sg-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.25rem 0.625rem;
+    border-radius: var(--radius-full);
+    font-size: 0.75rem;
+    font-weight: 700;
+    line-height: 1;
+}
+.sg-badge--indigo {
+    background: rgba(79, 70, 229, 0.12);
+    color: var(--accent-indigo);
+    border: 1px solid rgba(79, 70, 229, 0.25);
+}
+.sg-badge--cyan {
+    background: rgba(6, 182, 212, 0.12);
+    color: var(--accent-cyan);
+    border: 1px solid rgba(6, 182, 212, 0.25);
+}
+.sg-badge--amber {
+    background: rgba(245, 158, 11, 0.12);
+    color: var(--accent-amber);
+    border: 1px solid rgba(245, 158, 11, 0.25);
+}
+.sg-badge--crimson {
+    background: rgba(239, 68, 68, 0.12);
+    color: var(--accent-crimson);
+    border: 1px solid rgba(239, 68, 68, 0.25);
+}
+
+/* ==========================================================
+   6. FORM INPUTS
+   ========================================================== */
+.sg-input {
+    width: 100%;
+    padding: 0.6875rem 1rem;
+    background: var(--bg-input);
+    border: 1px solid var(--border-card);
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    font-size: 0.9375rem;
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+    box-sizing: border-box;
+}
+.sg-input::placeholder {
+    color: var(--text-muted);
+}
+.sg-input:focus {
+    outline: none;
+    border-color: var(--accent-indigo);
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.12);
+}
+.sg-select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 1rem;
+    padding-right: 2rem;
+}
+.sg-label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.375rem;
+}
+
+/* ==========================================================
+   7. GRIDS & LISTS
+   ========================================================== */
+.sg-grid {
+    display: grid;
+    gap: 1.25rem;
+    grid-template-columns: repeat(1, 1fr);
+}
+.sg-grid--5 {
+    grid-template-columns: repeat(2, 1fr);
+}
+@media (min-width: 640px) {
+    .sg-grid--2 { grid-template-columns: repeat(2, 1fr); }
+    .sg-grid--3 { grid-template-columns: repeat(2, 1fr); }
+    .sg-grid--4 { grid-template-columns: repeat(2, 1fr); }
+}
+@media (min-width: 768px) {
+    .sg-grid--3 { grid-template-columns: repeat(3, 1fr); }
+    .sg-grid--5 { grid-template-columns: repeat(3, 1fr); }
+}
+@media (min-width: 1024px) {
+    .sg-grid--4 { grid-template-columns: repeat(4, 1fr); }
+    .sg-grid--5 { grid-template-columns: repeat(5, 1fr); }
+}
+
+/* ==========================================================
+   8. HERO
+   ========================================================== */
+.sg-hero {
+    position: relative;
+    padding: 0;
+}
+.sg-hero-media {
+    position: relative;
+    width: 100%;
+    height: 420px;
+    overflow: hidden;
+    background: var(--bg-surface);
+}
+.sg-hero-media img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    opacity: 0;
+    animation: sgFadeIn 1.2s ease-out forwards;
+}
+.sg-hero-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(11, 15, 25, 0.55) 0%, rgba(31, 41, 55, 0.35) 60%, transparent 100%);
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 0 1.5rem;
+}
+.sg-hero-content {
+    max-width: 700px;
+    color: #ffffff;
+    animation: sgFadeInUp 1s ease-out 0.2s both;
+}
+.sg-hero-eyebrow {
+    font-size: 0.8125rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    color: #38bdf8;
+    text-transform: uppercase;
+    margin-bottom: 0.75rem;
+    display: inline-block;
+}
+.sg-hero-title {
+    font-size: clamp(1.75rem, 5vw, 3rem);
+    font-weight: 800;
+    line-height: 1.05;
+    margin: 0 0 1rem;
+    letter-spacing: -0.02em;
+}
+.sg-hero-lead {
+    font-size: 1.125rem;
+    color: #e2e8f0;
+    margin: 0 0 1.5rem;
+    line-height: 1.7;
+    max-width: 52ch;
+}
+.sg-hero-actions {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+@media (min-width: 768px) {
+    .sg-hero-media { height: 520px; }
+    .sg-hero-overlay { padding: 0 2rem; }
+}
+
+/* ==========================================================
+   9. NAVIGATION (user)
+   ========================================================== */
+.sg-nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: color-mix(in srgb, var(--bg-surface) 85%, transparent);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border-subtle);
+    transition: transform var(--transition-fast);
+}
+.sg-nav--scrolled {
+    box-shadow: var(--shadow-md);
+}
+.sg-nav-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 64px;
+}
+.sg-nav-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    font-weight: 800;
+    font-size: 1.25rem;
+    color: var(--text-primary);
+    white-space: nowrap;
+}
+.sg-nav-brand img {
+    height: 32px;
+    width: auto;
+    display: block;
+}
+.sg-nav-brand .sg-brand-mark {
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius-md);
+    background: var(--gradient-primary);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 0.9rem;
+}
+.sg-nav-links {
+    display: flex;
+    gap: 0.125rem;
+    align-items: center;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+.sg-nav-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.5rem 0.875rem;
+    border-radius: var(--radius-md);
+    color: var(--text-secondary);
+    font-weight: 500;
+    font-size: 0.9375rem;
+    transition: all var(--transition-fast);
+    white-space: nowrap;
+}
+.sg-nav-link:hover, .sg-nav-link.is-active {
+    color: var(--text-primary);
+    background: var(--bg-card-hover);
+}
+.sg-nav-link.is-active {
+    color: var(--accent-indigo);
+}
+
+/* Dropdown trigger for categories */
+.sg-nav-dropdown {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+}
+.sg-nav-dropdown-menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    min-width: 260px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-card);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    padding: 0.5rem 0;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(8px);
+    transition: all var(--transition-smooth);
+    z-index: var(--sg-z-dropdown);
+}
+.sg-nav-dropdown.open .sg-nav-dropdown-menu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+.sg-nav-dropdown-item {
+    display: block;
+    padding: 0.5625rem 1rem;
+    color: var(--text-secondary);
+    font-size: 0.9375rem;
+    transition: all var(--transition-fast);
+    cursor: pointer;
+    border: none;
+    background: none;
+    text-align: left;
+    width: 100%;
+}
+.sg-nav-dropdown-item:hover {
+    background: var(--bg-card-hover);
+    color: var(--text-primary);
+}
+.sg-nav-dropdown-item.is-active {
+    background: rgba(79, 70, 229, 0.08);
+    color: var(--accent-indigo);
+}
+
+/* ==========================================================
+   10. FOOTER
+   ========================================================== */
+.sg-footer {
+    margin-top: auto;
+    border-top: 1px solid var(--border-subtle);
+    background: var(--bg-surface);
+    color: var(--text-secondary);
+    padding: 3rem 0 2rem;
+}
+.sg-footer .sg-footer-brand p {
+    color: var(--text-muted);
+    font-size: 0.9375rem;
+    line-height: 1.7;
+    max-width: 300px;
+    margin: 0.75rem 0 0;
+}
+.sg-footer-title {
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+    letter-spacing: 0.02em;
+}
+.sg-footer-link {
+    color: var(--text-muted);
+    font-size: 0.9375rem;
+    transition: color var(--transition-fast);
+}
+.sg-footer-link:hover {
+    color: var(--accent-indigo);
+}
+
+/* ==========================================================
+   11. ALERTS & TOAST
+   ========================================================== */
+.sg-alert {
+    padding: 0.875rem 1.125rem;
+    border-radius: var(--radius-md);
+    margin-bottom: 1rem;
+    font-size: 0.9375rem;
+    border: 1px solid transparent;
+}
+.sg-alert--error {
+    background: rgba(239, 68, 68, 0.08);
+    border-color: rgba(239, 68, 68, 0.2);
+    color: var(--accent-crimson);
+}
+.sg-alert--success {
+    background: rgba(16, 185, 129, 0.08);
+    border-color: rgba(16, 185, 129, 0.2);
+    color: var(--accent-emerald);
+}
+.sg-alert--info {
+    background: rgba(79, 70, 229, 0.08);
+    border-color: rgba(79, 70, 229, 0.2);
+    color: var(--accent-indigo);
+}
+
+/* ==========================================================
+   12. TABLE
+   ========================================================== */
+.sg-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--bg-card);
+    border: 1px solid var(--border-card);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+}
+.sg-table th {
+    background: var(--bg-card-hover);
+    color: var(--text-secondary);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    text-align: left;
+    padding: 0.875rem 1rem;
+    border-bottom: 1px solid var(--border-subtle);
+}
+.sg-table td {
+    color: var(--text-primary);
+    font-size: 0.9375rem;
+    padding: 0.875rem 1rem;
+    border-bottom: 1px solid var(--border-subtle);
+}
+.sg-table tr:last-child td {
+    border-bottom: none;
+}
+.sg-table tr:hover td {
+    background: var(--bg-card-hover);
+}
+
+/* ==========================================================
+   13. UTILITIES
+   ========================================================== */
+.sg-mb-2 { margin-bottom: 0.5rem; }
+.sg-mb-3 { margin-bottom: 0.75rem; }
+.sg-mb-4 { margin-bottom: 1rem; }
+.sg-mb-6 { margin-bottom: 1.5rem; }
+.sg-mt-4 { margin-top: 1rem; }
+.sg-mt-6 { margin-top: 1.5rem; }
+.sg-flex { display: flex; }
+.sg-flex-col { flex-direction: column; }
+.sg-items-center { align-items: center; }
+.sg-justify-between { justify-content: space-between; }
+.sg-gap-2 { gap: 0.5rem; }
+.sg-gap-3 { gap: 0.75rem; }
+.sg-w-full { width: 100%; }
+.sg-text-center { text-align: center; }
+.sg-text-primary { color: var(--text-primary); }
+.sg-text-secondary { color: var(--text-secondary); }
+.sg-text-muted { color: var(--text-muted); }
+.sg-font-semibold { font-weight: 600; }
+.sg-font-bold { font-weight: 700; }
+.sg-rounded { border-radius: var(--radius-md); }
+.sg-overflow-hidden { overflow: hidden; }
+.sg-relative { position: relative; }
+
+/* ==========================================================
+   14. ANIMATIONS
+   ========================================================== */
+@keyframes sgFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+@keyframes sgFadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+/* Giảm chuyển động nếu người dùng yêu cầu */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+    .sg-hero-media img, .sg-hero-content { animation: none; opacity: 1; }
+}
+
+/* ==========================================================
+   15. OVERRIDES CHO CÁC THẦN PHẦN CŨ (không xóa file cũ)
+   ========================================================== */
+/* ==========================================================
+   15. BRIDGE LAYER — Ép các trang cũ (Blade viết tay) theo theme
+   ==========================================================
+   Nhiều view cũ hardcode màu tối trực tiếp trong attribute style.
+   Các rule dưới đây dùng attribute selector + !important để ghi đè
+   MÀ KHÔNG cần sửa từng file Blade. Hoạt động cho cả light và dark
+   vì tất cả đều quy về biến --bg-* / --text-*.
+   ========================================================== */
+
+/* --- 15.1 Nền tối hardcode trong inline style → nền theo theme --- */
+[style*="background:#0b0f19"],
+[style*="background: #0b0f19"],
+[style*="background:#0d1322"],
+[style*="background: #0d1322"],
+[style*="background:#080c14"],
+[style*="background: #080c14"],
+[style*="background:#0e1627"],
+[style*="background: #0e1627"],
+[style*="background:#0e1526"],
+[style*="background: #0e1526"],
+[style*="background:#111827"],
+[style*="background: #111827"],
+[style*="background:#151f32"],
+[style*="background: #151f32"],
+[style*="background:#151d30"],
+[style*="background: #151d30"],
+[style*="background:#1e293b"],
+[style*="background: #1e293b"],
+[style*="background:rgba(11,15,25"] {
+    background: var(--bg-card) !important;
+}
+
+/* Nền tối bán trong suốt dùng làm surface */
+[style*="background: rgba(255,255,255,0.03)"],
+[style*="background:rgba(255,255,255,0.03)"],
+[style*="background: rgba(255, 255, 255, 0.03)"],
+[style*="background:rgba(255, 255, 255, 0.03)"],
+[style*="background: rgba(255,255,255,0.05)"],
+[style*="background:rgba(255,255,255,0.05)"],
+[style*="background: rgba(255, 255, 255, 0.05)"] {
+    background: var(--bg-card-hover) !important;
+}
+
+/* --- 15.2 Chữ sáng hardcode → chữ theo theme --- */
+[style*="color:#f8fafc"],
+[style*="color: #f8fafc"],
+[style*="color:#f9fafb"],
+[style*="color: #f9fafb"],
+[style*="color:#ffffff"],
+[style*="color: #ffffff"],
+[style*="color:#fff;"],
+[style*="color: #fff;"],
+[style*="color:#e2e8f0"],
+[style*="color: #e2e8f0"],
+[style*="color:#cbd5e1"],
+[style*="color: #cbd5e1"] {
+    color: var(--text-primary) !important;
+}
+
+/* Chữ xám hardcode → text-secondary / muted */
+[style*="color:#94a3b8"],
+[style*="color: #94a3b8"],
+[style*="color:#9ca3af"],
+[style*="color: #9ca3af"],
+[style*="color:#64748b"],
+[style*="color: #64748b"],
+[style*="color:#6b7280"],
+[style*="color: #6b7280"] {
+    color: var(--text-secondary) !important;
+}
+
+/* --- 15.3 Viền tối hardcode → viền theo theme --- */
+[style*="border: 1px solid rgba(255,255,255,0.0"],
+[style*="border:1px solid rgba(255,255,255,0.0"],
+[style*="border: 1px solid rgba(255, 255, 255, 0.0"],
+[style*="border-top:1px solid rgba(255,255,255,0.0"],
+[style*="border-top: 1px solid rgba(255,255,255,0.0"],
+[style*="border-bottom:1px solid rgba(255,255,255,0.0"],
+[style*="border-bottom: 1px solid rgba(255,255,255,0.0"],
+[style*="border: 1px solid #404040"],
+[style*="border: 1px solid #e5e7eb"],
+[style*="border:1px solid #e5e7eb"],
+[style*="border: 1px solid #e2e8f0"] {
+    border-color: var(--border-card) !important;
+}
+
+/* --- 15.4 Component cũ trong trang danh mục / profile --- */
+.filter-inline-bar {
+    background: var(--bg-card) !important;
+    border: 1px solid var(--border-card) !important;
+    border-radius: var(--radius-lg) !important;
+    box-shadow: var(--shadow-sm) !important;
+}
+.filter-inline-bar .filter-input,
+.filter-inline-bar .filter-select,
+.filter-inline-bar input,
+.filter-inline-bar select {
+    background: var(--bg-input) !important;
+    border: 1px solid var(--border-card) !important;
+    color: var(--text-primary) !important;
+    border-radius: var(--radius-md) !important;
+}
+.filter-inline-bar input::placeholder {
+    color: var(--text-muted) !important;
+}
+
+.account-card {
+    background: var(--bg-card) !important;
+    border: 1px solid var(--border-card) !important;
+    border-radius: var(--radius-lg) !important;
+    box-shadow: var(--shadow-sm) !important;
+}
+.account-card .account-media {
+    background: var(--bg-input) !important;
+}
+.account-card .account-info .info-item {
+    background: var(--bg-card-hover) !important;
+    border: 1px solid var(--border-subtle) !important;
+}
+.account-card .account-actions {
+    border-top: 1px solid var(--border-subtle) !important;
+    background: transparent !important;
+}
+.no-data-empty {
+    background: var(--bg-card) !important;
+    border: 1px solid var(--border-card) !important;
+    color: var(--text-muted) !important;
+}
+
+/* --- 15.5 Navbar cũ (nếu trang nào không dùng layout mới) --- */
+.navbar {
+    background: color-mix(in srgb, var(--bg-surface) 92%, transparent) !important;
+    border-bottom: 1px solid var(--border-subtle) !important;
+}
+.nav-links a.nav-link-item,
+.nav-links .nav-link-item {
+    color: var(--text-secondary) !important;
+}
+.nav-links a.nav-link-item:hover,
+.nav-links .nav-link-item:hover,
+.nav-links a.nav-link-item.active {
+    color: var(--accent-indigo) !important;
+    background: var(--bg-card-hover) !important;
+}
+
+/* --- 15.6 Card sản phẩm kiểu "gaming" (modern-gaming.css) --- */
+.gaming-card {
+    background: var(--bg-card) !important;
+    border: 1px solid var(--border-card) !important;
+    border-radius: var(--radius-lg) !important;
+    box-shadow: var(--shadow-sm) !important;
+}
+.gaming-card:hover {
+    border-color: var(--accent-indigo) !important;
+    box-shadow: var(--shadow-lg) !important;
+}
+.gaming-card-media {
+    background: var(--bg-input) !important;
+}
+.gaming-card-title {
+    color: var(--text-primary) !important;
+}
+.gaming-card:hover .gaming-card-title {
+    color: var(--accent-indigo) !important;
+}
+.gaming-card-meta {
+    color: var(--text-muted) !important;
+}
+.btn-card-action {
+    background: var(--bg-card-hover) !important;
+    border: 1px solid var(--border-card) !important;
+    color: var(--text-primary) !important;
+    border-radius: var(--radius-sm) !important;
+    text-transform: none !important;
+    letter-spacing: 0 !important;
+}
+.gaming-card:hover .btn-card-action {
+    background: var(--gradient-primary) !important;
+    border-color: transparent !important;
+    color: #fff !important;
+}
+.section-title-gaming {
+    color: var(--text-primary) !important;
+    text-transform: none !important;
+    font-size: 1.5rem !important;
+    font-weight: 700 !important;
+    letter-spacing: -0.01em !important;
+}
+.section-title-gaming i {
+    color: var(--accent-indigo) !important;
+}
+.section-link-more {
+    color: var(--text-secondary) !important;
+}
+.section-link-more:hover {
+    color: var(--accent-indigo) !important;
+}
+
+/* --- 15.7 Spotlight card (trang chủ) --- */
+.spotlight-card {
+    background: var(--bg-card) !important;
+    border: 1px solid var(--border-card) !important;
+    border-radius: var(--radius-xl) !important;
+    box-shadow: var(--shadow-sm) !important;
+}
+.spotlight-card:hover {
+    border-color: var(--accent-indigo) !important;
+    box-shadow: var(--shadow-lg) !important;
+}
+.spotlight-title {
+    color: var(--text-primary) !important;
+    text-transform: none !important;
+    letter-spacing: -0.01em !important;
+}
+.spotlight-desc {
+    color: var(--text-secondary) !important;
+}
+.spotlight-action-btn {
+    text-transform: none !important;
+    letter-spacing: 0 !important;
+}
+
+/* --- 15.8 Marquee thông báo --- */
+.custom-marquee-container {
+    background: var(--bg-card) !important;
+    border: 1px solid var(--border-card) !important;
+}
+.marquee-item-text {
+    color: var(--text-secondary) !important;
+}
+.marquee-title {
+    color: var(--accent-indigo) !important;
+    text-transform: none !important;
+    letter-spacing: 0 !important;
+}
+
+/* --- 15.9 Flash sale --- */
+.fs-time-box {
+    background: var(--bg-card-hover) !important;
+    border: 1px solid var(--border-subtle) !important;
+    color: var(--text-primary) !important;
+}
+.fs-card {
+    background: var(--bg-card) !important;
+    border: 1px solid var(--border-card) !important;
+}
+.fs-old-price {
+    color: var(--text-muted) !important;
+}
+.fs-id {
+    color: var(--text-muted) !important;
+}
+
+/* --- 15.10 Form đăng nhập / đăng ký --- */
+.auth-card {
+    background: var(--bg-card) !important;
+    border: 1px solid var(--border-card) !important;
+    box-shadow: var(--shadow-md) !important;
+}
+.auth-title {
+    color: var(--text-primary) !important;
+}
+.auth-subtitle,
+.form-label {
+    color: var(--text-secondary) !important;
+}
+.form-input {
+    background: var(--bg-input) !important;
+    border: 1px solid var(--border-card) !important;
+    color: var(--text-primary) !important;
+}
+.form-input:focus {
+    border-color: var(--accent-indigo) !important;
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.12) !important;
+}
+.auth-btn {
+    background: var(--gradient-primary) !important;
+    border-radius: var(--radius-md) !important;
+}
+
+/* --- 15.11 Bảng dữ liệu trong trang user --- */
+table {
+    color: var(--text-primary);
+}
+thead th {
+    color: var(--text-secondary) !important;
+    border-bottom-color: var(--border-subtle) !important;
+}
+tbody td {
+    border-bottom-color: var(--border-subtle) !important;
+}
+
+/* --- 15.12 Tiêu đề section chung cũ (.section-title) --- */
+.section-title {
+    color: var(--text-primary) !important;
+    text-transform: none !important;
+    letter-spacing: -0.01em !important;
+}
+
+/* --- 15.13 Modal nạp tiền --- */
+.deposit-modal-content {
+    background: var(--bg-surface) !important;
+    border-top: 1px solid var(--border-card) !important;
+}
+.deposit-modal-title {
+    color: var(--text-primary) !important;
+}
+.deposit-modal-link {
+    border-color: var(--border-card) !important;
+    color: var(--text-primary) !important;
+    background: var(--bg-card) !important;
+}
+.deposit-modal-link:hover {
+    background: var(--bg-card-hover) !important;
+    border-color: var(--accent-indigo) !important;
+}
+.deposit-modal-text {
+    color: var(--text-primary) !important;
+}
+.deposit-modal-subtext {
+    color: var(--text-muted) !important;
+}
+.deposit-modal-arrow {
+    color: var(--text-muted) !important;
+}
+
+/* --- 15.14 Mobile bottom nav --- */
+.mobile-bottom-nav {
+    background: color-mix(in srgb, var(--bg-surface) 94%, transparent) !important;
+    border-top: 1px solid var(--border-subtle) !important;
+}
+.mobile-bottom-nav a {
+    color: var(--text-muted) !important;
+}
+.mobile-bottom-nav a.active {
+    color: var(--accent-indigo) !important;
+}
+
+/* --- 15.15 Preloader theo theme --- */
+#pagePreloader {
+    background: color-mix(in srgb, var(--bg-base) 80%, transparent) !important;
+}
+#global-preloader {
+    background: color-mix(in srgb, var(--bg-base) 70%, transparent) !important;
+}
+
+/* ==========================================================
+   16. THEME TOGGLE BUTTON
+   ========================================================== */
+.sg-theme-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-full);
+    border: 1px solid var(--border-card);
+    background: var(--bg-card);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    flex-shrink: 0;
+}
+.sg-theme-toggle:hover {
+    border-color: var(--accent-indigo);
+    color: var(--accent-indigo);
+    background: var(--bg-card-hover);
+}
+.sg-theme-toggle .sg-icon-sun,
+.sg-theme-toggle .sg-icon-moon {
+    font-size: 1rem;
+    line-height: 1;
+}
+/* Light mode: hiện mặt trăng (để chuyển sang tối) */
+.sg-theme-toggle .sg-icon-sun { display: none; }
+.sg-theme-toggle .sg-icon-moon { display: inline; }
+[data-theme="dark"] .sg-theme-toggle .sg-icon-sun { display: inline; }
+[data-theme="dark"] .sg-theme-toggle .sg-icon-moon { display: none; }
+

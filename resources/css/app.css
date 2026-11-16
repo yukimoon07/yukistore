@@ -1,0 +1,16 @@
+/* ============================================================
+   SHOPGAME — Tailwind entry (build pipeline dự phòng)
+   ------------------------------------------------------------
+   Hiện tại frontend phục vụ CSS tĩnh từ public/css/ (style.css,
+   legacy-compat.css, modern-gaming.css, shopgame-theme.css) và
+   KHÔNG dùng Tailwind trong Blade. File này tồn tại để `npm run
+   build` không thất bại và để có chỗ mở rộng về sau.
+
+   Nếu muốn chuyển sang Tailwind cho component mới: import file
+   này trong head.blade.php bằng @vite(['resources/css/app.css'])
+   SAU KHI đã build. Không bật đồng thời với CSS tĩnh để tránh
+   xung đột preflight.
+   ============================================================ */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
