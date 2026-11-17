@@ -41,7 +41,6 @@ fi
 php artisan migrate --force
 if [ "$NEED_SEED" = "1" ]; then
   php artisan db:seed --force
-  touch /tmp/need_admin_now
 fi
 
 php artisan storage:link >/dev/null 2>&1 || true
@@ -49,8 +48,13 @@ php artisan config:cache >/dev/null
 php artisan route:cache >/dev/null 2>&1 || true
 php artisan view:cache >/dev/null 2>&1 || true
 
-if [ -f /tmp/need_admin_now ]; then
-  php artisan admin:create-admin --username="$ADMIN_USERNAME" --email="$ADMIN_EMAIL" --password="$ADMIN_PASSWORD" --no-confirm || echo 'warning: tao admin that bai'
+# Bảo đảm admin tồn tại: chỉ tạo khi chưa có (tránh đè mật khẩu mỗi lần restart).
+ADMIN_EXISTS=$(php artisan tinker --execute="echo \\App\\Models\\User::where('username', getenv('ADMIN_USERNAME'))->where('role','admin')->exists() ? 'yes' : 'no';" 2>/dev/null | tail -1)
+if [ "$ADMIN_EXISTS" != "yes" ]; then
+  echo "Admin '$ADMIN_USERNAME' chua ton tai — dang tao..."
+  php artisan admin:create-admin --username="$ADMIN_USERNAME" --email="$ADMIN_EMAIL" --password="$ADMIN_PASSWORD" --no-confirm --force 2>&1 | tail -3
+else
+  echo "Admin '$ADMIN_USERNAME' da ton tai — bo qua."
 fi
 
 exec php artisan serve --host=0.0.0.0 --port="$PORT"
