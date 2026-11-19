@@ -39,7 +39,7 @@
                 <h4 style="color:#f8fafc;font-size:0.9rem;font-weight:700;margin-bottom:16px;text-transform:uppercase;letter-spacing:1px;">{{ __('shop.footer_contact') }}</h4>
                 <div style="display:flex;flex-direction:column;gap:10px;font-size:0.85rem;color:#cbd5e1;">
                     @if(config_get('email'))
-                    <div>Email: <a href="mailto:{{ config_get('email') }}" style="color:#38bdf8;text-decoration:none;">{{ config_get('email') }}</a></div>
+                    <div>Email: <a href="mailto:{{ config_get('email') }}" style="color:var(--yuki-gold, #E8B33C);text-decoration:none;">{{ config_get('email') }}</a></div>
                     @endif
                     @if(config_get('phone'))
                     <div>Hotline: <span style="color:#f8fafc;font-weight:600;">{{ config_get('phone') }}</span></div>
@@ -53,13 +53,13 @@
                 </div>
                 <div style="display:flex;gap:12px;margin-top:16px;">
                     @if(config_get('facebook'))
-                    <a href="{{ config_get('facebook') }}" target="_blank" rel="noopener noreferrer" aria-label="Facebook" style="color:#38bdf8;font-size:1.4rem;transition:transform .2s;"><i class="fab fa-facebook"></i></a>
+                    <a href="{{ config_get('facebook') }}" target="_blank" rel="noopener noreferrer" aria-label="Facebook" style="color:var(--yuki-gold, #E8B33C);font-size:1.4rem;transition:transform .2s;"><i class="fab fa-facebook"></i></a>
                     @endif
                     @if(config_get('youtube'))
                     <a href="{{ config_get('youtube') }}" target="_blank" rel="noopener noreferrer" aria-label="YouTube" style="color:#ef4444;font-size:1.4rem;transition:transform .2s;"><i class="fab fa-youtube"></i></a>
                     @endif
                     @if(config_get('telegram'))
-                    <a href="{{ config_get('telegram') }}" target="_blank" rel="noopener noreferrer" aria-label="Telegram" style="color:#06b6d4;font-size:1.4rem;transition:transform .2s;"><i class="fab fa-telegram"></i></a>
+                    <a href="{{ config_get('telegram') }}" target="_blank" rel="noopener noreferrer" aria-label="Telegram" style="color:#C2922A;font-size:1.4rem;transition:transform .2s;"><i class="fab fa-telegram"></i></a>
                     @endif
                 </div>
             </div>

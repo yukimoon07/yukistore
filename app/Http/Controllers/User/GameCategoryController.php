@@ -21,7 +21,7 @@ class GameCategoryController extends Controller
         }
 
         // Base queries
-        if ($request->hasAny(['code', 'price_range', 'status'])) {
+        if ($request->hasAny(['code', 'price_range', 'status', 'price_from', 'price_to'])) {
             if ($request->filled('code')) {
                 $accounts->where('id', $request->code);
             }
@@ -33,11 +33,26 @@ class GameCategoryController extends Controller
                     $accounts->where('price', '>=', $range[0]);
                 }
             }
+            // Form filter dùng price_from/price_to — trước đây bị bỏ qua nên lọc giá không có tác dụng.
+            if ($request->filled('price_from')) {
+                $accounts->where('price', '>=', (float) $request->price_from);
+            }
+            if ($request->filled('price_to')) {
+                $accounts->where('price', '<=', (float) $request->price_to);
+            }
             if ($request->filled('status')) {
                 $accounts->where('status', $request->status);
             }
         }
-        $accounts = $accounts->orderBy('id', 'DESC')->get();
+
+        $sort = $request->input('sort');
+        $accounts = match ($sort) {
+            'price_asc'  => $accounts->orderBy('price', 'ASC')->orderBy('id', 'DESC'),
+            'price_desc' => $accounts->orderBy('price', 'DESC')->orderBy('id', 'DESC'),
+            'oldest'     => $accounts->orderBy('id', 'ASC'),
+            default      => $accounts->orderBy('id', 'DESC'),
+        };
+        $accounts = $accounts->get();
 
         $flashSalePrice = \App\Models\FlashSale::getActivePrice('game', $category->id);
         if ($flashSalePrice !== null) {

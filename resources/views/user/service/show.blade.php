@@ -435,7 +435,7 @@
         }
 
         feedback.style.display = 'block';
-        feedback.style.color = '#38bdf8';
+        feedback.style.color = getComputedStyle(document.documentElement).getPropertyValue('--yuki-gold-strong').trim() || '#F5C453';
         feedback.innerText = 'Đang kiểm tra mã ưu đãi...';
 
         fetch('/api/discount-codes/validate', {

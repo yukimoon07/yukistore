@@ -3,98 +3,238 @@
 @section('title', $category->name)
 
 @section('content')
-    <!-- Hero Section -->
     <x-hero-header title="{{ $category->name }}" description="{{ $category->description }}" />
 
-    <!-- Account List Section -->
-    <section class="account-section" style="padding: 32px 0 60px;">
+    <section class="yk-section">
         <div class="container">
-            <!-- Filter Bar -->
-            <form action="" method="GET" class="filter-inline-bar" style="background: var(--bg-card, #151f32); border: 1px solid var(--border-card, #1e2c45); border-radius: 14px; padding: 16px 20px; display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-bottom: 30px; box-shadow: 0 4px 16px rgba(0,0,0,0.25);">
-                <input type="text" name="code" class="filter-input" placeholder="{{ __('shop.filter_code') }}" value="{{ request('code') }}" style="background: var(--bg-input, #0e1627); border: 1px solid var(--border-subtle, rgba(255,255,255,0.08)); border-radius: 8px; color: #fff; padding: 8px 14px; font-size: 0.88rem; min-width: 130px; flex: 1;">
-                
-                <input type="number" name="price_from" class="filter-input" placeholder="{{ __('shop.filter_price_from') }}" value="{{ request('price_from') }}" style="background: var(--bg-input, #0e1627); border: 1px solid var(--border-subtle, rgba(255,255,255,0.08)); border-radius: 8px; color: #fff; padding: 8px 14px; font-size: 0.88rem; min-width: 110px; flex: 1;">
-                <input type="number" name="price_to" class="filter-input" placeholder="{{ __('shop.filter_price_to') }}" value="{{ request('price_to') }}" style="background: var(--bg-input, #0e1627); border: 1px solid var(--border-subtle, rgba(255,255,255,0.08)); border-radius: 8px; color: #fff; padding: 8px 14px; font-size: 0.88rem; min-width: 110px; flex: 1;">
+
+            {{-- Bộ lọc --}}
+            <form method="GET" action="{{ url()->current() }}" class="yk-filter" aria-label="Bộ lọc tài khoản">
+                <div class="yk-filter__field">
+                    <label for="filter-code">{{ __('shop.filter_code') }}</label>
+                    <input type="number" id="filter-code" name="code" placeholder="VD: 123"
+                           value="{{ request('code') }}" inputmode="numeric">
+                </div>
+
+                <div class="yk-filter__field">
+                    <label for="filter-price-from">{{ __('shop.filter_price_from') }}</label>
+                    <input type="number" id="filter-price-from" name="price_from" min="0" step="1000"
+                           placeholder="0" value="{{ request('price_from') }}" inputmode="numeric">
+                </div>
+
+                <div class="yk-filter__field">
+                    <label for="filter-price-to">{{ __('shop.filter_price_to') }}</label>
+                    <input type="number" id="filter-price-to" name="price_to" min="0" step="1000"
+                           placeholder="Vô hạn" value="{{ request('price_to') }}" inputmode="numeric">
+                </div>
 
                 @foreach($dynamicKeys as $key)
-                    <input type="text" name="details[{{ $key }}]" class="filter-input" placeholder="{{ $key }}..." value="{{ request("details.{$key}") }}" style="background: var(--bg-input, #0e1627); border: 1px solid var(--border-subtle, rgba(255,255,255,0.08)); border-radius: 8px; color: #fff; padding: 8px 14px; font-size: 0.88rem; min-width: 130px; flex: 1;">
+                    <div class="yk-filter__field">
+                        <label for="filter-detail-{{ $loop->iteration }}">{{ $key }}</label>
+                        <input type="text" id="filter-detail-{{ $loop->iteration }}"
+                               name="details[{{ $key }}]" placeholder="{{ $key }}..."
+                               value="{{ request("details.{$key}") }}">
+                    </div>
                 @endforeach
 
-                <select name="status" class="filter-select" style="background: var(--bg-input, #0e1627); border: 1px solid var(--border-subtle, rgba(255,255,255,0.08)); border-radius: 8px; color: #fff; padding: 8px 14px; font-size: 0.88rem; min-width: 130px;">
-                    <option value="" style="background: #111827;">{{ __('shop.filter_status_all') }}</option>
-                    <option value="available" {{ request('status') == 'available' ? 'selected' : '' }} style="background: #111827;">{{ __('shop.filter_status_available') }}</option>
-                    <option value="sold" {{ request('status') == 'sold' ? 'selected' : '' }} style="background: #111827;">{{ __('shop.filter_status_sold') }}</option>
-                </select>
+                <div class="yk-filter__field">
+                    <label for="filter-status">{{ __('shop.filter_status_all') }}</label>
+                    <select id="filter-status" name="status">
+                        <option value="">{{ __('shop.filter_status_all') }}</option>
+                        <option value="available" {{ request('status') == 'available' ? 'selected' : '' }}>{{ __('shop.filter_status_available') }}</option>
+                        <option value="sold" {{ request('status') == 'sold' ? 'selected' : '' }}>{{ __('shop.filter_status_sold') }}</option>
+                    </select>
+                </div>
 
-                <div style="display: flex; gap: 8px;">
-                    <button type="submit" class="filter-btn filter-btn-search" style="background: linear-gradient(135deg, #2563eb, #06b6d4); color: #fff; border: none; border-radius: 8px; padding: 8px 18px; font-weight: 700; font-size: 0.88rem; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
-                        <i class="fa-solid fa-search"></i> {{ __('shop.filter_search_btn') }}
+                <div class="yk-filter__field">
+                    <label for="filter-sort">Sắp xếp</label>
+                    <select id="filter-sort" name="sort">
+                        <option value="" {{ !request('sort') ? 'selected' : '' }}>Mới nhất</option>
+                        <option value="price_asc" {{ request('sort') == 'price_asc' ? 'selected' : '' }}>Giá thấp → cao</option>
+                        <option value="price_desc" {{ request('sort') == 'price_desc' ? 'selected' : '' }}>Giá cao → thấp</option>
+                        <option value="oldest" {{ request('sort') == 'oldest' ? 'selected' : '' }}>Cũ nhất</option>
+                    </select>
+                </div>
+
+                <div class="yk-filter__actions">
+                    <button type="submit" class="yk-btn yk-btn--primary yk-btn--sm">
+                        <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i> {{ __('shop.filter_search_btn') }}
                     </button>
-                    <a href="{{ request()->url() }}" class="filter-btn filter-btn-reset" style="background: rgba(255,255,255,0.06); color: #94a3b8; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 8px 14px; font-weight: 600; font-size: 0.88rem; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
-                        <i class="fa-solid fa-rotate-right"></i> {{ __('shop.filter_reset_btn') }}
+                    <a href="{{ url()->current() }}" class="yk-btn yk-btn--ghost yk-btn--sm">
+                        <i class="fa-solid fa-rotate-right" aria-hidden="true"></i> {{ __('shop.filter_reset_btn') }}
                     </a>
                 </div>
             </form>
 
-            <!-- Account Grid -->
-            <div class="account-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px;">
+            {{-- Danh sách tài khoản --}}
+            <div class="yk-grid yk-grid--account">
                 @forelse($accounts as $account)
-                    <div class="account-card" style="background: var(--bg-card, #151f32); border: 1px solid var(--border-card, #1e2c45); border-radius: 14px; overflow: hidden; display: flex; flex-direction: column; transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.25s; box-shadow: 0 4px 16px rgba(0,0,0,0.3);">
-                        <div class="account-media" style="position: relative; width: 100%; aspect-ratio: 16/10; overflow: hidden; background: #0b0f19;">
-                            <a href="{{ route('account.show', ['id' => $account->id]) }}">
-                                <img src="{{ $account->thumb }}" alt="Account Preview" class="account-img" loading="lazy" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s ease;">
+                    <article class="yk-tile yk-account">
+                        <div class="yk-tile__media">
+                            <a href="{{ route('account.show', ['id' => $account->id]) }}" aria-label="Xem chi tiết tài khoản #{{ $account->id }}">
+                                <img src="{{ $account->thumb }}" alt="Ảnh xem trước tài khoản #{{ $account->id }}"
+                                     loading="lazy" width="400" height="250"
+                                     onerror="this.style.visibility='hidden'">
                             </a>
-                            <div class="account-code" style="position: absolute; bottom: 8px; left: 8px; background: rgba(0,0,0,0.75); backdrop-filter: blur(4px); color: #fff; font-size: 0.78rem; font-weight: 700; padding: 3px 8px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1);">
-                                {{ __('shop.detail_id') }}: #{{ $account->id }}
-                            </div>
-                            <div class="account-price-top" style="position: absolute; top: 8px; right: 8px; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(4px); color: var(--accent-amber, #f59e0b); font-size: 0.8rem; font-weight: 800; padding: 4px 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1);">
-                                {{ number_format($account->price) }} đ
-                            </div>
+                            <span class="yk-account__code">#{{ $account->id }}</span>
+                            <span class="yk-account__status {{ $account->status === 'available' ? 'yk-account__status--in' : 'yk-account__status--out' }}">
+                                {{ $account->status === 'available' ? 'Còn hàng' : 'Đã bán' }}
+                            </span>
+                            <span class="yk-tile__price">{{ number_format($account->price) }} đ</span>
                         </div>
 
-                        <div class="account-info" style="padding: 14px; flex-grow: 1;">
+                        <div class="yk-tile__body">
                             @php
                                 $details = is_array($account->details) ? $account->details : json_decode($account->details, true) ?? [];
                             @endphp
-                            
-                            @if(count($details) > 0)
-                                <div class="account-row" style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px;">
-                                    @foreach(array_slice($details, 0, 4) as $detail)
-                                    <div class="info-item" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); border-radius: 6px; padding: 4px 8px; font-size: 0.78rem; flex: 1 1 45%; display: flex; justify-content: space-between; overflow: hidden;">
-                                        <span class="info-item__title" style="color: #94a3b8; font-weight: 500;">{{ $detail['key'] ?? '' }}:</span>
-                                        <span class="info-value" style="color: #f8fafc; font-weight: 700; margin-left: 4px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">{{ $detail['value'] ?? '' }}</span>
-                                    </div>
-                                    @endforeach
-                                </div>
-                            @endif
-                        </div>
 
-                        <div class="account-actions" style="padding: 12px 14px; border-top: 1px solid var(--border-subtle, rgba(255,255,255,0.06)); display: flex; align-items: center; justify-content: space-between; gap: 10px;">
-                            <div class="card-price" style="font-size: 0.76rem; color: #94a3b8; font-weight: 600;">
-                                {{ __('shop.detail_price_card') }}: <span style="color: #cbd5e1;">{{ number_format($account->price / ((100 - config_get('payment.card.discount_percent')) / 100)) }} đ</span>
+                            @if(count($details) > 0)
+                                <dl class="yk-account__specs">
+                                    @foreach(array_slice($details, 0, 4) as $detail)
+                                        <div class="yk-account__spec">
+                                            <dt>{{ $detail['key'] ?? '' }}</dt>
+                                            <dd>{{ \Illuminate\Support\Str::limit($detail['value'] ?? '', 24) }}</dd>
+                                        </div>
+                                    @endforeach
+                                </dl>
+                            @endif
+
+                            <div class="yk-tile__cta">
+                                <span class="yk-account__cardprice">
+                                    {{ __('shop.detail_price_card') }}: {{ number_format($account->price / ((100 - config_get('payment.card.discount_percent')) / 100)) }} đ
+                                </span>
+                                <a href="{{ route('account.show', ['id' => $account->id]) }}" class="yk-btn yk-btn--primary yk-btn--sm">
+                                    {{ __('shop.btn_view_detail') }}
+                                </a>
                             </div>
-                            <a href="{{ route('account.show', ['id' => $account->id]) }}"
-                                class="action-btn action-btn--detail" style="background: linear-gradient(135deg, #2563eb, #06b6d4); color: #fff; padding: 7px 14px; border-radius: 8px; font-weight: 700; font-size: 0.8rem; text-decoration: none; text-transform: uppercase; letter-spacing: 0.3px; transition: all 0.2s; white-space: nowrap;">
-                                {{ __('shop.btn_view_detail') }}
-                            </a>
                         </div>
-                    </div>
+                    </article>
                 @empty
-                    <div class="no-data-empty" style="text-align: center; padding: 80px 20px; grid-column: 1 / -1; width: 100%; background: var(--bg-card, #151f32); border-radius: 16px; border: 1px solid var(--border-card, #1e2c45);">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="width: 56px; height: 56px; color: #64748b; margin-bottom: 16px;">
-                            <path d="M21 8v13H3V8"></path>
-                            <path d="M1 3h22v5H1z"></path>
-                            <path d="M10 12h4v4h-4z"></path>
-                        </svg>
-                        <p style="color: #94a3b8; font-size: 1.05rem; font-weight: 600; margin: 0;">{{ __('shop.empty_accounts') }}</p>
+                    <div class="yk-empty">
+                        <div class="yk-empty__icon"><i class="fa-solid fa-box-open" aria-hidden="true"></i></div>
+                        <h2 class="yk-empty__title">{{ __('shop.empty_accounts') }}</h2>
+                        <p class="yk-empty__text">Danh mục này chưa có tài khoản hoặc không có tài khoản nào khớp bộ lọc.</p>
+                        <a href="{{ url()->current() }}" class="yk-btn yk-btn--ghost yk-btn--sm">Xóa bộ lọc</a>
                     </div>
                 @endforelse
             </div>
 
-            <!-- Pagination -->
-            <div style="display: flex; justify-content: center; width: 100%; margin-top: 36px;">
+            {{-- Phân trang --}}
+            <div class="yk-pagination">
                 {{ $accounts->links('user.pagination.custom') }}
             </div>
         </div>
     </section>
 @endsection
+
+@push('css')
+<style>
+    /* ---- Filter bar ---- */
+    .yk-filter {
+        display: grid;
+        gap: var(--space-3);
+        grid-template-columns: 1fr;
+        padding: var(--space-4);
+        margin-bottom: var(--space-6);
+        background: var(--yuki-ink-900);
+        border: 1px solid var(--yuki-line);
+        border-radius: var(--radius-card);
+    }
+    @media (min-width: 640px) {
+        .yk-filter { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (min-width: 1024px) {
+        .yk-filter { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+        .yk-filter__field:nth-last-child(-n+2) { grid-column: span 2; }
+    }
+
+    .yk-filter__actions {
+        display: flex;
+        align-items: flex-end;
+        gap: var(--space-2);
+    }
+
+    /* ---- Account card ---- */
+    .yk-grid--account { grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); }
+
+    /* Thẻ tài khoản là <article>, không phải <a> — CTA nằm bên trong */
+    .yk-account { cursor: default; }
+    .yk-account:hover { transform: none; }
+    .yk-account .yk-tile__media { aspect-ratio: 16 / 10; }
+
+    .yk-account__code {
+        position: absolute;
+        left: var(--space-2);
+        bottom: var(--space-2);
+        padding: 2px var(--space-2);
+        border-radius: var(--radius-sm);
+        background: rgba(8, 9, 11, 0.82);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        font-family: var(--font-display);
+        font-variant-numeric: tabular-nums;
+        font-size: var(--text-xs);
+        font-weight: 600;
+        color: var(--yuki-text);
+    }
+
+    .yk-account__status {
+        position: absolute;
+        top: var(--space-2);
+        left: var(--space-2);
+        padding: 2px var(--space-2);
+        border-radius: var(--radius-sm);
+        font: var(--font-caption);
+        font-weight: 700;
+        letter-spacing: 0.02em;
+    }
+    .yk-account__status--in  { background: rgba(63, 191, 127, 0.9); color: #06281a; }
+    .yk-account__status--out { background: rgba(8, 9, 11, 0.85); color: var(--yuki-text-faint); border: 1px solid rgba(255,255,255,0.12); }
+
+    .yk-account__specs {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--space-1) var(--space-2);
+        margin: 0 0 var(--space-3);
+    }
+    .yk-account__spec {
+        display: flex;
+        justify-content: space-between;
+        gap: var(--space-2);
+        padding: 3px 6px;
+        border-radius: var(--radius-sm);
+        background: var(--yuki-ink-850);
+        border: 1px solid rgba(255, 255, 255, 0.04);
+        overflow: hidden;
+    }
+    .yk-account__spec dt {
+        color: var(--yuki-text-muted);
+        font-size: var(--text-xs);
+        white-space: nowrap;
+    }
+    .yk-account__spec dd {
+        margin: 0;
+        color: var(--yuki-text);
+        font-size: var(--text-xs);
+        font-weight: 600;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .yk-account__cardprice {
+        font: var(--font-caption);
+        color: var(--yuki-text-muted);
+        font-variant-numeric: tabular-nums;
+    }
+
+    /* Tài khoản đã bán: mờ ảnh + ẩn CTA giá thẻ */
+    .yk-account--sold .yk-tile__media img { filter: grayscale(0.7) brightness(0.7); }
+
+    /* ---- Pagination ---- */
+    .yk-pagination {
+        display: flex;
+        justify-content: center;
+        margin-top: var(--space-8);
+    }
+</style>
+@endpush

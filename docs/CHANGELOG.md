@@ -1,5 +1,33 @@
 # CHANGELOG.md — Lịch sử thay đổi
 
+## [1.2.0] — 19/11/2026 — Yuki Store: tích hợp danh mục ảnh + redesign "Graphite & Gold"
+
+### Tích hợp sản phẩm & ảnh (từ 19 ảnh user cung cấp)
+- **Mới**: `database/seeders/CatalogImageSeeder.php` — 7 game_groups + 10 game_categories + 6 random_categories, updateOrCreate theo slug (idempotent, chạy lại không trùng). Giá đọc trực tiếp từ chữ trên ảnh (2K/20K/50K/100K/99K/200K). KHÔNG tạo acc mẫu — tuân thủ D8.
+- **Mới**: `storage/app/public/categories/catalog/` — 16 ảnh banner chuẩn hóa tên (fc-mobile.png, blox-fruits.png, genshin-impact*.png, arknights-endfield.png, valorant.png, fc-online.png, lien-quan-*.png) + `storage/app/public/banners/` 3 banner hero. Ảnh trùng md5 đã loại.
+- **Mới**: `CHAY_SEED_DANHMUC.bat` — storage:link + seed + optimize:clear.
+- Ảnh cũ trong DB giữ nguyên; seeder chỉ thêm/cập nhật bản ghi theo slug.
+
+### Design system mới — "Graphite & Gold"
+- **Viết lại**: `public/css/shopgame-theme.css` — tokens mới: nền graphite #08090B→#1A1D24, NHẤN gold #E8B33C (CTA + giá), Space Grotesk (display/tiền) + Be Vietnam Pro (thân bài), radius 4–10px, shadow tối giản. File định nghĩa LẠI mọi biến cũ (--primary/--bg-card/--text-muted/...) nên view chưa sửa vẫn nhận theme (D17 giữ nguyên: load cuối).
+- **Sửa**: `layouts/user/head.blade.php` — load 2 font mới; bỏ khối :root inline cũ (2 nguồn sự thật).
+- Component mới: .yk-btn (primary/ghost/danger + size), .yk-card, .yk-tile (product card ảnh 16/9, badge, giá gold), .yk-modal, .yk-empty, .yk-badge, .yk-breadcrumb, .yk-pager (phân trang 38px), .yk-skeleton, focus-visible gold, prefers-reduced-motion, min-height 44px vùng chạm mobile, overflow-x clip toàn cục.
+
+### Redesign view
+- **Viết lại**: `user/home.blade.php` (1232→~1090 dòng) — hero slider (dùng 3 banner kèm sẵn khi Admin chưa upload), panel top-nạp 2 tab, marquee + ticker gọn, flash sale tokens mới, lưới danh mục theo game, section dịch vụ/wheel/proof. JS slider/tab/countdown viết lại gọn, tôn trọng reduced-motion. Không còn 25 gradient hardcode; giữ toàn bộ dữ liệu động.
+- **Viết lại**: `user/category/show-all.blade.php`, `show-group.blade.php`, `show.blade.php`, `user/service/show-all.blade.php`, `user/random/show-all.blade.php`, `user/pagination/custom.blade.php`, `components/hero-header.blade.php`.
+- **Sửa**: `user/random/category.blade.php` — trang mua túi mù đổi sang yk-modal/yk-qty; JS mua hàng + id giữ nguyên 100%.
+- **Sửa**: `user/account/detail.blade.php` — 3 nút mua chuyển sang tông gold; logic mua/trả góp không đổi.
+- **Sửa**: header/footer — các accent cyan/blue còn sót đổi sang gold; footer/menu giữ cấu trúc.
+- **Sửa logic thật (bug)**: `GameCategoryController::index` — filter `price_from`/`price_to` của form TRƯỚC ĐÂY KHÔNG được xử lý (form gửi 2 field này nhưng controller chỉ đọc `price_range`) → thêm xử lý; thêm sort `sort=price_asc|price_desc|oldest` (select mới trong view).
+
+### Đã kiểm tra
+- phpchk (brace/paren token): 6 file PHP OK. bladechk + trace thủ công: mọi view cân bằng (@section inline title + content chuẩn Laravel).
+- Seeder đối chiếu schema từ shopgame.sql: đủ cột, 0 slug trùng, 23 bản ghi.
+- 0 reference còn sót tới class cũ (gaming-card/hero-split/...) trong các view đã viết lại.
+- ⚠️ Sandbox không có PHP/MySQL/npm nên CHƯA chạy migrate/seed/serve — user cần chạy `CHAY_SEED_DANHMUC.bat` sau `CHAY_MIGRATE.bat`.
+- ⚠️ Profile/mission/withdraw pages còn accent blue nhẹ (thấp ưu tiên, không thuộc luồng mua chính).
+
 ## [1.1.0] — 14/11/2026 — Nâng cấp Admin Panel (dễ dùng + cấu hình chuyên sâu)
 
 ### Mới — Cài đặt nâng cao (Admin Panel)

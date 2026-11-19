@@ -1,33 +1,65 @@
 @extends('layouts.user.app')
 
-@section('title', 'Danh mục Random')
+@section('title', 'Danh mục random')
 
 @section('content')
-    <x-hero-header title="DANH MỤC RANDOM" description="Danh sách các danh mục tài khoản random" />
+    <x-hero-header title="Danh mục random"
+                   description="Mua tài khoản ngẫu nhiên theo từng gói giá. Hệ thống giao acc tự động sau khi thanh toán." />
 
-    <section class="menu">
+    <section class="yk-section">
         <div class="container">
-            <div class="category__list">
-                @if ($categories->count() > 0)
-                    @foreach ($categories as $category)
-                        <a href="{{ route('random.index', ['slug' => $category->slug]) }}" class="category__item">
-                            <img src="{{ $category->thumbnail }}" alt="{{ $category->name }}" class="category__img" />
-                            <h2 class="category__title">{{ mb_strtoupper($category->name, 'UTF-8') }}</h2>
-                            <p class="category__desc">Tổng tài khoản: {{ number_format($category->allAccount) }}</p>
-                            <p class="category__desc">Acc đã bán: {{ number_format($category->soldCount) }}</p>
-                            <p class="text category__action">Mua ngay</p>
-                        </a>
-                    @endforeach
-                @else
-                    <div class="no-results">
-                        <div class="no-results__content">
-                            <i class="fas fa-exclamation-circle no-results__icon"></i>
-                            <h2 class="no-results__title">Không tìm thấy danh mục!</h2>
-                            <p class="no-results__message">Hiện tại không có danh mục random nào.</p>
+            <div class="yk-grid">
+                @forelse ($categories as $category)
+                    <a href="{{ route('random.index', ['slug' => $category->slug]) }}" class="yk-tile">
+                        <div class="yk-tile__media">
+                            @if($category->thumbnail)
+                                <img src="{{ $category->thumbnail }}" alt="{{ $category->name }}" loading="lazy" width="400" height="225">
+                            @else
+                                <div class="yk-tile__placeholder" aria-hidden="true">
+                                    <i class="fa-solid fa-gift"></i>
+                                </div>
+                            @endif
+
+                            @if(isset($category->price) && $category->price > 0)
+                                <span class="yk-tile__price">{{ number_format($category->price) }} đ</span>
+                            @endif
                         </div>
+
+                        <div class="yk-tile__body">
+                            <h2 class="yk-tile__title">{{ $category->name }}</h2>
+                            <div class="yk-tile__meta">
+                                <span>Còn {{ number_format($category->allAccount) }}</span>
+                                <span class="dot" aria-hidden="true">·</span>
+                                <span>Đã bán {{ number_format($category->soldCount) }}</span>
+                            </div>
+                            <div class="yk-tile__cta">
+                                <span>Mua ngay</span>
+                                <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+                            </div>
+                        </div>
+                    </a>
+                @empty
+                    <div class="yk-empty">
+                        <div class="yk-empty__icon"><i class="fa-solid fa-gift" aria-hidden="true"></i></div>
+                        <h2 class="yk-empty__title">Chưa có danh mục random nào</h2>
+                        <p class="yk-empty__text">Hệ thống đang cập nhật, vui lòng quay lại sau.</p>
+                        <a href="{{ route('category.show-all') }}" class="yk-btn yk-btn--ghost yk-btn--sm">Xem danh mục khác</a>
                     </div>
-                @endif
+                @endforelse
             </div>
         </div>
     </section>
 @endsection
+
+@push('css')
+<style>
+    .yk-tile__placeholder {
+        width: 100%;
+        height: 100%;
+        display: grid;
+        place-items: center;
+        color: var(--yuki-text-faint);
+        font-size: 1.75rem;
+    }
+</style>
+@endpush

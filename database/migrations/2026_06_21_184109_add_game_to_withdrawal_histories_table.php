@@ -11,11 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasColumn('withdrawal_histories', 'game')) {
-            Schema::table('withdrawal_histories', function (Blueprint $table) {
-                $table->string('game')->nullable();
-            });
-        }
+        Schema::table('withdrawal_histories', function (Blueprint $table) {
+            $table->string('game')->nullable();
+        });
     }
 
     /**
@@ -23,10 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        if (Schema::hasColumn('withdrawal_histories', 'game')) {
-            Schema::table('withdrawal_histories', function (Blueprint $table) {
-                $table->dropColumn('game');
-            });
-        }
+        Schema::table('withdrawal_histories', function (Blueprint $table) {
+            $table->dropColumn('game');
+        });
     }
 };

@@ -119,14 +119,14 @@
                     @if ($account->status === 'available')
                         <div class="ecom-action-row-1">
                             <a href="{{ route('profile.deposit-card') }}" class="ecom-btn ecom-btn-outline"><i class="fas fa-shopping-cart"></i> {{ __('shop.detail_deposit_card') }}</a>
-                            <button class="ecom-btn ecom-btn-solid" onclick="buyAccount({{ $account->id }})" style="background: linear-gradient(135deg, #2563eb, #06b6d4); border: none; font-weight: 700;">{{ __('shop.detail_buy_balance') }}</button>
+                            <button class="ecom-btn ecom-btn-solid" onclick="buyAccount({{ $account->id }})" style="background: linear-gradient(135deg, #E8B33C, #C2922A); border: none; font-weight: 700; color: #241C08;">{{ __('shop.detail_buy_balance') }}</button>
                         </div>
                         <div class="ecom-or-divider">--- hoặc ---</div>
-                        <button class="ecom-btn ecom-btn-atm" style="margin-top: 10px; width: 100%; background: rgba(6, 182, 212, 0.15); border: 1px solid var(--accent-cyan, #06b6d4); color: #38bdf8;" onclick="showRechargeModal('wallet')">
+                        <button class="ecom-btn ecom-btn-atm" style="margin-top: 10px; width: 100%; background: rgba(232, 179, 60, 0.1); border: 1px solid rgba(232, 179, 60, 0.4); color: var(--yuki-gold-strong, #F5C453);" onclick="showRechargeModal('wallet')">
                             {{ __('shop.detail_buy_atm') }}<br>
                             <small>{{ number_format($account->price) }} Đ</small>
                         </button>
-                        <button class="ecom-btn" style="margin-top: 10px; width: 100%; background: rgba(59, 130, 246, 0.15); border: 1px solid #3b82f6; color: #93c5fd;" onclick="showInstallmentModal()">
+                        <button class="ecom-btn" style="margin-top: 10px; width: 100%; background: rgba(111, 168, 220, 0.1); border: 1px solid rgba(111, 168, 220, 0.4); color: #A8C8E8;" onclick="showInstallmentModal()">
                             <i class="fas fa-hand-holding-usd"></i> {{ __('shop.detail_installment') }}<br>
                             <small>{{ __('shop.detail_installment_sub', ['amount' => number_format($account->price * 0.2)]) }}</small>
                         </button>

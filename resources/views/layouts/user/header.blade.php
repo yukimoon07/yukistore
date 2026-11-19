@@ -21,7 +21,7 @@
     width: 10px;
     height: 10px;
     border-radius: 50%;
-    background: var(--accent-cyan, #06b6d4);
+    background: var(--color-primary, #E8B33C);
     opacity: .3;
     animation: antdSpinDot 1s ease-in-out infinite;
   }
@@ -119,11 +119,11 @@
       .nav-links a.nav-link-item:hover,
       .nav-links .nav-link-item:hover,
       .nav-links a.nav-link-item.active {
-          color: #38bdf8 !important;
+          color: var(--yuki-gold, #E8B33C) !important;
           background: rgba(255, 255, 255, 0.06) !important;
       }
       .nav-links a.nav-link-item.active {
-          color: #38bdf8 !important;
+          color: var(--yuki-gold, #E8B33C) !important;
       }
 
       /* ----------------------------------------------------------
@@ -202,8 +202,8 @@
       }
       .cat-tab-item:hover,
       .cat-tab-item.active {
-          background: rgba(56, 189, 248, 0.12) !important;
-          border-color: rgba(56, 189, 248, 0.3) !important;
+          background: rgba(232, 179, 60, 0.12) !important;
+          border-color: rgba(232, 179, 60, 0.3) !important;
       }
       .cat-tab-icon {
           width: 26px;
@@ -226,7 +226,7 @@
       }
       .cat-tab-item:hover .cat-tab-name,
       .cat-tab-item.active .cat-tab-name {
-          color: #38bdf8 !important;
+          color: var(--yuki-gold, #E8B33C) !important;
       }
       .cat-tab-count {
           font-size: 0.68rem;
@@ -246,7 +246,7 @@
       .cat-tab-item:hover .cat-tab-arrow,
       .cat-tab-item.active .cat-tab-arrow {
           transform: translateX(3px);
-          color: #38bdf8;
+          color: var(--yuki-gold, #E8B33C);
       }
 
       /* Right Side: Detail Content Panes */
@@ -326,8 +326,8 @@
           overflow: hidden !important;
       }
       .cat-item-card:hover {
-          background: rgba(56, 189, 248, 0.12) !important;
-          border-color: rgba(56, 189, 248, 0.35) !important;
+          background: rgba(232, 179, 60, 0.12) !important;
+          border-color: rgba(232, 179, 60, 0.35) !important;
           transform: translateY(-1px) !important;
       }
       .cat-item-thumb {
@@ -364,7 +364,7 @@
           transition: color 0.15s ease !important;
       }
       .cat-item-card:hover .cat-item-name {
-          color: #38bdf8 !important;
+          color: var(--yuki-gold, #E8B33C) !important;
       }
       .cat-item-badge {
           font-size: 0.65rem !important;
@@ -520,7 +520,7 @@
   }
   .nav-dropdown-menu a:hover {
       background: rgba(255, 255, 255, 0.06) !important;
-      color: #38bdf8 !important;
+      color: var(--yuki-gold, #E8B33C) !important;
   }
 
   /* LANGUAGE SWITCHER - DARK SLATE GLASS BUTTON */
@@ -541,7 +541,7 @@
   }
   .ant-header-lang-trigger:hover {
       background: rgba(255, 255, 255, 0.12) !important;
-      border-color: rgba(56, 189, 248, 0.35) !important;
+      border-color: rgba(232, 179, 60, 0.35) !important;
   }
   .ant-header-lang-text {
       font-size: 13px !important;
@@ -577,8 +577,8 @@
   }
   .ant-dropdown-item:hover,
   .ant-dropdown-item.active {
-      background: rgba(56, 189, 248, 0.12) !important;
-      color: #38bdf8 !important;
+      background: rgba(232, 179, 60, 0.12) !important;
+      color: var(--yuki-gold, #E8B33C) !important;
   }
 </style>
 
@@ -592,7 +592,7 @@
                  width="120" height="32"
                  style="height:32px; max-width:160px; width:auto; object-fit:contain; display:block;">
             <span class="fallback-brand" style="display:none; align-items:center; gap:8px; font-size:1.1rem; font-weight:800; color:#f8fafc; white-space:nowrap;">
-                <span class="brand-icon" style="width:28px; height:28px; border-radius:6px; background:linear-gradient(135deg, var(--color-primary, #2563EB), var(--color-info, #38BDF8)); display:inline-flex; align-items:center; justify-content:center; color:#fff; font-size:0.85rem;"><i class="fa-solid fa-gamepad"></i></span>
+                <span class="brand-icon" style="width:28px; height:28px; border-radius:6px; background:linear-gradient(135deg, #E8B33C, #C2922A); display:inline-flex; align-items:center; justify-content:center; color:#fff; font-size:0.85rem;"><i class="fa-solid fa-gamepad"></i></span>
                 <span>{{ \Illuminate\Support\Str::limit(config_get('site_name', 'SHOP GAME'), 16) }}</span>
             </span>
         </a>
@@ -668,7 +668,7 @@
                                 'url' => route('category.index', ['slug' => $cat->slug]),
                                 'thumbnail' => $cat->thumbnail,
                                 'badge' => $badge,
-                                'badge_style' => 'background: rgba(56, 189, 248, 0.2); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.4);',
+                                'badge_style' => 'background: rgba(56, 189, 248, 0.2); color: var(--yuki-gold, #E8B33C); border: 1px solid rgba(56, 189, 248, 0.4);',
                                 'fallback_icon' => 'ant-design:user-outlined',
                             ]);
                         }
@@ -743,11 +743,11 @@
                     <!-- Left: Category Tabs (5 Groups) -->
                     <div class="nav-cat-tabs">
                         <div class="cat-tab-item active" data-target="cat-panel-boosting" onmouseenter="switchNavCatTab(this, 'cat-panel-boosting')" onclick="switchNavCatTab(this, 'cat-panel-boosting')">
-                            <span class="cat-tab-icon" style="background: rgba(6, 182, 212, 0.15); color: #06b6d4;">
+                            <span class="cat-tab-icon" style="background: rgba(232, 179, 60, 0.15); color: #C2922A;">
                                 <span class="iconify" data-icon="ant-design:thunderbolt-filled"></span>
                             </span>
                             <span class="cat-tab-name">{{ __('shop.nav_cat_boosting') }}</span>
-                            <span class="cat-tab-count" style="background: rgba(6, 182, 212, 0.15); color: #38bdf8;">{{ $groupBoosting->count() }}</span>
+                            <span class="cat-tab-count" style="background: rgba(232, 179, 60, 0.15); color: var(--yuki-gold, #E8B33C);">{{ $groupBoosting->count() }}</span>
                             <span class="cat-tab-arrow"><span class="iconify" data-icon="ant-design:right-outlined"></span></span>
                         </div>
 
@@ -793,8 +793,8 @@
                         <!-- 1. CÀY THUÊ -->
                         <div class="cat-detail-panel active" id="cat-panel-boosting">
                             <div class="cat-detail-header">
-                                <span class="iconify" data-icon="ant-design:thunderbolt-filled" style="color: #06b6d4;"></span>
-                                <span class="cat-detail-title" style="color: #38bdf8;">{{ __('shop.nav_cat_boosting') }}</span>
+                                <span class="iconify" data-icon="ant-design:thunderbolt-filled" style="color: #C2922A;"></span>
+                                <span class="cat-detail-title" style="color: var(--yuki-gold, #E8B33C);">{{ __('shop.nav_cat_boosting') }}</span>
                                 <span class="cat-detail-subtitle">({{ $groupBoosting->count() }} {{ __('shop.nav_cat_count_services', ['count' => '']) }})</span>
                             </div>
                             <div class="cat-items-grid">
@@ -807,7 +807,7 @@
                                         $sBadgeStyle = 'background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.4);';
                                     } elseif (str_contains($service->slug, 'genshin')) {
                                         $sBadge = 'PRO';
-                                        $sBadgeStyle = 'background: rgba(56, 189, 248, 0.2); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.4);';
+                                        $sBadgeStyle = 'background: rgba(56, 189, 248, 0.2); color: var(--yuki-gold, #E8B33C); border: 1px solid rgba(56, 189, 248, 0.4);';
                                     } elseif (str_contains($service->slug, 'ride')) {
                                         $sBadge = 'PET';
                                         $sBadgeStyle = 'background: rgba(168, 85, 247, 0.2); color: #a855f7; border: 1px solid rgba(168, 85, 247, 0.4);';
@@ -954,7 +954,7 @@
 
             <!-- Missions / Kiếm Tiền (Harmonized Color + HOT Badge) -->
             <li><a href="{{ route('missions.index') }}" class="nav-link-item {{ request()->routeIs('missions.*') ? 'active' : '' }}"><span class="iconify"
-                        data-icon="ant-design:fire-filled" style="color:#06b6d4;"></span> {{ __('shop.nav_missions') }} <span style="font-size: 10px; background: linear-gradient(135deg, #06b6d4, #2563eb); color: #fff; padding: 2px 6px; border-radius: 8px; margin-left: 2px; font-weight: 800;">HOT</span></a></li>
+                        data-icon="ant-design:fire-filled" style="color:#C2922A;"></span> {{ __('shop.nav_missions') }} <span style="font-size: 10px; background: linear-gradient(135deg, #E8B33C, #C2922A); color: #fff; padding: 2px 6px; border-radius: 8px; margin-left: 2px; font-weight: 800;">HOT</span></a></li>
 
             @if(Auth::check() && Auth::user()->role === 'admin')
             <li class="mobile-only-admin">
@@ -994,7 +994,7 @@
             </div>
 
             <!-- Deposit Button -->
-            <a href="javascript:void(0)" onclick="document.getElementById('depositMethodModal').style.display='flex'" class="btn-deposit-glow" style="background: linear-gradient(135deg, var(--color-primary, #2563EB), var(--color-info, #38BDF8)); color: #fff; padding: 7px 14px; border-radius: 20px; font-weight: 700; font-size: 0.82rem; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 14px rgba(6, 182, 212, 0.3); white-space: nowrap; flex-shrink: 0;">
+            <a href="javascript:void(0)" onclick="document.getElementById('depositMethodModal').style.display='flex'" class="btn-deposit-glow" style="background: linear-gradient(135deg, #E8B33C, #C2922A); color: #fff; padding: 7px 14px; border-radius: 20px; font-weight: 700; font-size: 0.82rem; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 14px rgba(232, 179, 60, 0.25); white-space: nowrap; flex-shrink: 0;">
                 <span class="iconify" data-icon="ant-design:plus-circle-outlined"></span> {{ __('shop.nav_deposit') }}
             </a>
 
@@ -1005,9 +1005,9 @@
                     style="display:flex;align-items:center;gap:10px;cursor:pointer;">
                     <div style="text-align:right;">
                         <div style="font-weight:600;font-size:0.85rem;line-height:1.2;color:#f8fafc;">{{ Auth::user()->username }}</div>
-                        <div style="font-size:0.75rem;color:#38bdf8;">{{ number_format(Auth::user()->balance) }}đ</div>
+                        <div style="font-size:0.75rem;color:var(--yuki-gold, #E8B33C);">{{ number_format(Auth::user()->balance) }}đ</div>
                     </div>
-                    <button class="nav-avatar" id="avatarBtn" aria-label="User menu" style="background: linear-gradient(135deg, var(--color-primary, #2563EB), var(--color-info, #38BDF8)); color: #fff; border: 1px solid rgba(255,255,255,0.2); width:34px; height:34px; border-radius:50%; font-weight:700; cursor:pointer;">
+                    <button class="nav-avatar" id="avatarBtn" aria-label="User menu" style="background: linear-gradient(135deg, #E8B33C, #C2922A); color: #fff; border: 1px solid rgba(255,255,255,0.2); width:34px; height:34px; border-radius:50%; font-weight:700; cursor:pointer;">
                         {{ strtoupper(substr(Auth::user()->username, 0, 1)) }}
                     </button>
                 </div>

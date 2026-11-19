@@ -1,122 +1,139 @@
 @extends('layouts.user.app')
-@section('title', $title ?? 'Kho Danh Mục Tài Khoản Game')
+@section('title', $title ?? 'Kho danh mục tài khoản game')
 @section('content')
 
 @php
     $groupedCategories = [];
     if (isset($gameGroups)) {
-        foreach($gameGroups as $gg) {
+        foreach ($gameGroups as $gg) {
             $groupedCategories[trim($gg->name)] = collect([]);
         }
     }
-    
-    foreach($categories as $category) {
-        if ($category->gameGroup) {
-            $groupName = trim($category->gameGroup->name);
-            if (!isset($groupedCategories[$groupName])) {
-                $groupedCategories[$groupName] = collect([]);
-            }
-            $groupedCategories[$groupName]->push($category);
-        } else {
-            $groupName = $category->platform ? trim($category->platform) : 'Danh Mục Game';
-            if (!isset($groupedCategories[$groupName])) {
-                $groupedCategories[$groupName] = collect([]);
-            }
-            $groupedCategories[$groupName]->push($category);
+
+    foreach ($categories as $category) {
+        $groupName = $category->gameGroup
+            ? trim($category->gameGroup->name)
+            : ($category->platform ? trim($category->platform) : 'Danh mục khác');
+
+        if (!isset($groupedCategories[$groupName])) {
+            $groupedCategories[$groupName] = collect([]);
         }
+        $groupedCategories[$groupName]->push($category);
     }
+
+    $totalCategories = $categories->where('active', 1)->count();
 @endphp
 
-<div class="service-detail-wrapper" style="padding-top: 24px; padding-bottom: 60px;">
+<section class="yk-page-hero">
     <div class="container">
-        <!-- Breadcrumb -->
-        <nav class="gaming-breadcrumb" aria-label="Breadcrumb">
-            <a href="/"><i class="fa-solid fa-house"></i> Trang chủ</a>
-            <span class="gaming-breadcrumb-sep">/</span>
-            <span class="gaming-breadcrumb-current">Tất Cả Danh Mục Game</span>
+        <nav class="yk-breadcrumb" aria-label="Breadcrumb">
+            <a href="/"><i class="fa-solid fa-house" aria-hidden="true"></i> Trang chủ</a>
+            <span class="yk-breadcrumb__sep">/</span>
+            <span class="yk-breadcrumb__current">Tất cả danh mục</span>
         </nav>
 
-        <!-- Header Banner -->
-        <header class="service-header-banner" style="margin-bottom: 28px;">
-            <div class="service-header-left">
-                <div class="service-security-pill">
-                    <i class="fa-solid fa-shield-halved"></i> Giao Dịch Tự Động 100% - Bảo Hành Uy Tín
-                </div>
-                <h1 class="service-header-title">KHO TÀI KHOẢN GAME CHÍNH HÃNG</h1>
-                <p class="service-header-desc">
-                    Danh mục tài khoản game cập nhật liên tục, giao dịch tự động và an toàn. Danh sách game hiển thị bên dưới lấy trực tiếp từ hệ thống.
-                </p>
-            </div>
-        </header>
+        <h1 class="yk-page-hero__title">Kho tài khoản game</h1>
+        <p class="yk-page-hero__desc">
+            Danh mục tài khoản cập nhật liên tục, giao dịch tự động. Giá trên mỗi thẻ là giá thấp nhất
+            còn hàng trong danh mục tại thời điểm hiện tại.
+        </p>
 
+        <div class="yk-stat-row">
+            <span class="yk-badge yk-badge--info">{{ number_format($totalCategories) }} danh mục</span>
+            <span class="yk-badge yk-badge--success"><i class="fa-solid fa-bolt" aria-hidden="true"></i> Giao dịch tự động</span>
+        </div>
+    </div>
+</section>
+
+<section class="yk-section">
+    <div class="container">
         @if ($categories->count() > 0)
             @foreach ($groupedCategories as $platform => $group)
                 @if($group->count() > 0)
-                    <section class="section gaming-group-section" id="categories-{{ Str::slug($platform) }}" style="padding: 20px 0 32px;">
-                        <div class="section-header-gaming">
-                            <h2 class="section-title-gaming">
-                                <i class="fa-solid fa-gamepad" style="color: var(--primary-accent);"></i> {{ mb_strtoupper($platform, 'UTF-8') }}
-                            </h2>
-                            <a href="{{ route('category.group', ['slug' => Str::slug($platform)]) }}" class="section-link-more">
-                                Xem tất cả <i class="fa-solid fa-chevron-right" style="font-size: 0.75rem;"></i>
+                    @php
+                        $sortedGroup = $group->sortBy(function ($item) {
+                            $isRandom = ($item instanceof \App\Models\RandomCategory);
+                            return ($isRandom ? 10000000 : 0) + ($item->price ?? 0);
+                        });
+                    @endphp
+
+                    <div class="yk-group" id="categories-{{ \Illuminate\Support\Str::slug($platform) }}">
+                        <div class="yk-section-head">
+                            <h2 class="yk-section-title">{{ mb_strtoupper($platform, 'UTF-8') }}</h2>
+                            <a href="{{ route('category.group', ['slug' => \Illuminate\Support\Str::slug($platform)]) }}" class="yk-section-link">
+                                Xem tất cả <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
                             </a>
                         </div>
 
-                        @php
-                            $sortedGroup = $group->sortBy(function($item) {
-                                $isRandom = ($item instanceof \App\Models\RandomCategory);
-                                return ($isRandom ? 10000000 : 0) + ($item->price ?? 0);
-                            });
-                        @endphp
-                        <div class="gaming-grid-5">
+                        <div class="yk-grid">
                             @foreach ($sortedGroup as $category)
                                 @if ($category->active)
-                                    <a href="{{ $category->url ?? route('category.index', ['slug' => $category->slug]) }}" class="gaming-card">
-                                        <div class="gaming-card-media">
-                                            @if(isset($category->price) && $category->price > 0)
-                                                <span class="gaming-card-badge" style="color: var(--accent-amber);">
-                                                    {{ number_format($category->price) }} đ
-                                                </span>
-                                            @else
-                                                <span class="gaming-card-badge">
-                                                    ACC VIP
-                                                </span>
-                                            @endif
+                                    <a href="{{ $category->url ?? route('category.index', ['slug' => $category->slug]) }}" class="yk-tile">
+                                        <div class="yk-tile__media">
                                             @if($category->thumbnail)
-                                                <img src="{{ $category->thumbnail }}" alt="{{ $category->name }}" class="gaming-card-img" loading="lazy">
+                                                <img src="{{ $category->thumbnail }}" alt="{{ $category->name }}" loading="lazy" width="400" height="225">
                                             @else
-                                                <div style="display:flex;align-items:center;justify-content:center;height:100%;background:rgba(255,255,255,0.03);color:var(--text-muted);">
-                                                    <i class="fa-solid fa-gamepad" style="font-size:2.5rem;"></i>
+                                                <div class="yk-tile__placeholder" aria-hidden="true">
+                                                    <i class="fa-solid fa-gamepad"></i>
                                                 </div>
+                                            @endif
+
+                                            @if(isset($category->price) && $category->price > 0)
+                                                <span class="yk-tile__price">{{ number_format($category->price) }} đ</span>
+                                            @else
+                                                <span class="yk-tile__badge">ACC VIP</span>
                                             @endif
                                         </div>
-                                        <div class="gaming-card-body">
-                                            <h3 class="gaming-card-title">{{ $category->name }}</h3>
-                                            <div class="gaming-card-meta">
-                                                <i class="fa-solid fa-box-archive"></i>
-                                                <span>Còn: {{ number_format($category->allAccount) }}</span>
-                                                <span style="margin: 0 4px;">•</span>
-                                                <span>Đã bán: {{ number_format($category->soldCount) }}</span>
+
+                                        <div class="yk-tile__body">
+                                            <h3 class="yk-tile__title">{{ $category->name }}</h3>
+                                            <div class="yk-tile__meta">
+                                                <span>Còn {{ number_format($category->allAccount) }}</span>
+                                                <span class="dot" aria-hidden="true">·</span>
+                                                <span>Đã bán {{ number_format($category->soldCount) }}</span>
                                             </div>
-                                            <div class="gaming-card-action">
-                                                <div class="btn-card-action">
-                                                    <i class="fa-solid fa-cart-shopping"></i> Mua Ngay
-                                                </div>
+                                            <div class="yk-tile__cta">
+                                                <span>Mua ngay</span>
+                                                <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
                                             </div>
                                         </div>
                                     </a>
                                 @endif
                             @endforeach
                         </div>
-                    </section>
+                    </div>
                 @endif
             @endforeach
         @else
-            <div class="empty-state" style="text-align: center; padding: 80px 20px; width: 100%;">
-                <span class="iconify" data-icon="bx:box" style="font-size: 48px; color: #94a3b8; margin-bottom: 12px; display: inline-block;"></span>
-                <div style="color: #94a3b8; font-size: 0.95rem;">Chưa có tài khoản nào</div>
+            <div class="yk-empty">
+                <div class="yk-empty__icon"><i class="fa-solid fa-box-open" aria-hidden="true"></i></div>
+                <h2 class="yk-empty__title">Chưa có danh mục nào</h2>
+                <p class="yk-empty__text">Hệ thống đang cập nhật tài khoản mới. Vui lòng quay lại sau.</p>
+                <a href="/" class="yk-btn yk-btn--ghost yk-btn--sm">Về trang chủ</a>
             </div>
         @endif
     </div>
-</div>
+</section>
 @endsection
+
+@push('css')
+<style>
+    .yk-group + .yk-group { margin-top: var(--space-10); }
+
+    .yk-stat-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--space-2);
+        margin-top: var(--space-4);
+    }
+
+    .yk-tile__placeholder {
+        width: 100%;
+        height: 100%;
+        display: grid;
+        place-items: center;
+        color: var(--yuki-text-faint);
+        font-size: 1.75rem;
+    }
+</style>
+@endpush

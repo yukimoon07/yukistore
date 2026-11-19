@@ -54,7 +54,8 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
+    <!-- Space Grotesk: display/tiêu đề + số tiền. Be Vietnam Pro: thân bài dấu tiếng Việt đầy đủ -->
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
     <!-- antd.min.css (269KB) đã bị loại: không có component AntD nào thực sự dùng trong views
          (chỉ class trùng tên tự viết trong style block). Nếu cần dùng lại, thêm:
     <link href="https://cdn.jsdelivr.net/npm/antd@4.24.16/dist/antd.min.css" rel="stylesheet"> -->
@@ -67,17 +68,9 @@
     <script src="https://code.iconify.design/3/3.1.0/iconify.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
   <style>
-        :root {
-            --primary: #2563eb;
-            --primary-dark: #1d4ed8;
-            --primary-light: #3b82f6;
-            --primary-glow: rgba(37, 99, 235, 0.25);
-            --accent: #f59e0b;
-            --ant-primary-color: #2563eb;
-        }
-
+        /* Token brand — giá trị giữ ở shopgame-theme.css (load cuối) để tránh 2 nguồn sự thật */
         .brand-icon {
-            background: linear-gradient(135deg, var(--color-primary, #2563EB), var(--color-info, #38BDF8));
+            background: linear-gradient(135deg, var(--color-primary, #E8B33C), var(--color-warning, #C2922A));
         }
     </style>
     <script>
@@ -254,8 +247,8 @@
         }
         .ant-dropdown-item:hover,
         .ant-dropdown-item.active {
-            background: rgba(56, 189, 248, 0.12) !important;
-            color: #38bdf8 !important;
+            background: rgba(232, 179, 60, 0.12) !important;
+            color: var(--yuki-gold, #E8B33C) !important;
         }
     </style>
     <script>
