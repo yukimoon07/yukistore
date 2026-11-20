@@ -1,25 +1,24 @@
 @extends('layouts.user.app')
 
-@section('title', 'Đăng nhập')
+@section('title', 'Sign in - ' . (config('app.name') ?: 'ShopGame'))
 
 @push('css')
 <style>
     .auth-page {
-        min-height: calc(100vh - 64px - 300px);
+        min-height: calc(100vh - 64px - 280px);
         display: flex;
         align-items: center;
         justify-content: center;
-        padding: 40px 20px;
-        background-color: transparent;
+        padding: 48px 20px;
     }
     .auth-card {
-        background: #fff;
+        background: #0f1626;
         width: 100%;
         max-width: 420px;
         border-radius: 16px;
-        box-shadow: 0 4px 24px rgba(0,0,0,0.06);
-        padding: 32px;
-        border: 1px solid #e5e7eb;
+        box-shadow: 0 16px 48px rgba(0, 0, 0, 0.6);
+        padding: 32px 28px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
     }
     .auth-header {
         text-align: center;
@@ -28,139 +27,113 @@
     .auth-title {
         font-size: 1.5rem;
         font-weight: 700;
-        color: #1a1a1a;
-        margin: 0 0 8px 0;
+        color: #f8fafc;
+        margin: 0 0 6px 0;
+        letter-spacing: -0.02em;
     }
     .auth-subtitle {
-        color: #666;
-        font-size: 0.9rem;
+        color: #94a3b8;
+        font-size: 0.88rem;
         margin: 0;
     }
-    .form-group {
-        margin-bottom: 16px;
-    }
-    .form-label {
-        display: block;
-        font-weight: 600;
-        font-size: 0.85rem;
-        margin-bottom: 6px;
-        color: #333;
-    }
-    .form-input {
-        width: 100%;
-        padding: 10px 14px;
-        border-radius: 8px;
-        border: 1px solid #d9d9d9;
-        font-size: 0.9rem;
-        transition: all 0.2s;
-        outline: none;
-    }
-    .form-input:focus {
-        border-color: var(--primary);
-        box-shadow: 0 0 0 2px var(--primary-glow);
-    }
-    .form-error {
-        color: #dc2626;
-        font-size: 0.8rem;
-        margin-top: 4px;
-        display: block;
-    }
-    .auth-btn {
-        width: 100%;
-        padding: 12px;
-        background: var(--primary);
-        color: #fff;
-        border: none;
-        border-radius: 8px;
-        font-weight: 600;
-        font-size: 0.95rem;
-        cursor: pointer;
-        transition: all 0.2s;
-        margin-top: 8px;
-    }
-    .auth-btn:hover {
-        background: var(--primary-dark);
-    }
-    .auth-links {
-        text-align: center;
-        margin-top: 20px;
-        font-size: 0.85rem;
-    }
-    .auth-links a {
-        color: var(--primary);
-        text-decoration: none;
-        font-weight: 500;
-    }
-    .auth-links a:hover {
-        text-decoration: underline;
-    }
-    .social-divider {
+    .federated-buttons {
         display: flex;
-        align-items: center;
-        text-align: center;
-        margin: 24px 0;
-        color: #999;
-        font-size: 0.8rem;
-    }
-    .social-divider::before, .social-divider::after {
-        content: '';
-        flex: 1;
-        border-bottom: 1px solid #e5e7eb;
-    }
-    .social-divider:not(:empty)::before {
-        margin-right: .25em;
-    }
-    .social-divider:not(:empty)::after {
-        margin-left: .25em;
+        flex-direction: column;
+        gap: 10px;
+        margin-bottom: 20px;
     }
     .social-btn {
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 8px;
+        gap: 10px;
         width: 100%;
-        padding: 10px;
+        padding: 10px 16px;
         border-radius: 8px;
-        border: 1px solid #e5e7eb;
-        background: #fff;
-        color: #333;
-        font-weight: 500;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        background: rgba(255, 255, 255, 0.05);
+        color: #f1f5f9;
+        font-weight: 600;
         text-decoration: none;
-        font-size: 0.9rem;
-        transition: all 0.2s;
-        margin-bottom: 10px;
+        font-size: 0.88rem;
+        cursor: pointer;
+        transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease;
     }
     .social-btn:hover {
-        background: #f9f9f9;
-        border-color: #d9d9d9;
+        background: rgba(255, 255, 255, 0.1);
+        border-color: rgba(255, 255, 255, 0.22);
+        color: #ffffff;
     }
-    .social-btn img {
-        width: 20px;
-        height: 20px;
+    .social-btn .iconify {
+        font-size: 1.15rem;
     }
-    /* Dark Mode */
-    [data-theme="dark"] .auth-card {
-        background: #171717;
-        border-color: #2a2a2a;
+    .form-group {
+        margin-bottom: 18px;
     }
-    [data-theme="dark"] .auth-title { color: #fff; }
-    [data-theme="dark"] .auth-subtitle { color: #999; }
-    [data-theme="dark"] .form-label { color: #ccc; }
-    [data-theme="dark"] .form-input {
-        background: #262626;
-        border-color: #404040;
-        color: #fff;
+    .form-label {
+        display: block;
+        font-weight: 600;
+        font-size: 0.84rem;
+        margin-bottom: 6px;
+        color: #cbd5e1;
     }
-    [data-theme="dark"] .social-divider::before, [data-theme="dark"] .social-divider::after {
-        border-color: #2a2a2a;
+    .form-input {
+        width: 100%;
+        padding: 10px 14px;
+        border-radius: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        background: #080c14;
+        color: #f8fafc;
+        font-size: 0.9rem;
+        transition: border-color 150ms ease, box-shadow 150ms ease;
+        outline: none;
+        box-sizing: border-box;
     }
-    [data-theme="dark"] .social-btn {
-        background: #262626;
-        border-color: #404040;
-        color: #ccc;
+    .form-input:focus {
+        border-color: var(--yuki-gold, #E8B33C);
+        box-shadow: 0 0 0 3px rgba(232, 179, 60, 0.25);
     }
-    [data-theme="dark"] .social-btn:hover {
-        background: #333;
+    .form-error {
+        color: #f87171;
+        font-size: 0.8rem;
+        margin-top: 5px;
+        display: block;
+    }
+    .auth-btn {
+        width: 100%;
+        padding: 12px;
+        background: linear-gradient(135deg, #E8B33C, #C2922A);
+        color: #0b0f19;
+        border: none;
+        border-radius: 8px;
+        font-weight: 700;
+        font-size: 0.95rem;
+        cursor: pointer;
+        transition: transform 150ms ease, filter 150ms ease, box-shadow 150ms ease;
+        margin-top: 6px;
+        box-shadow: 0 4px 14px rgba(232, 179, 60, 0.25);
+    }
+    .auth-btn:hover {
+        filter: brightness(1.08);
+        box-shadow: 0 6px 18px rgba(232, 179, 60, 0.35);
+    }
+    .auth-btn:active {
+        transform: scale(0.99);
+    }
+    .auth-links {
+        text-align: center;
+        margin-top: 24px;
+        font-size: 0.86rem;
+        color: #94a3b8;
+    }
+    .auth-links a {
+        color: var(--yuki-gold, #E8B33C);
+        text-decoration: none;
+        font-weight: 600;
+        margin-left: 4px;
+    }
+    .auth-links a:hover {
+        text-decoration: underline;
     }
 </style>
 @endpush
@@ -169,70 +142,117 @@
 <div class="auth-page">
     <div class="auth-card">
         <div class="auth-header">
-            <h1 class="auth-title">Đăng Nhập</h1>
-            <p class="auth-subtitle">Chào mừng bạn quay trở lại!</p>
+            <h1 class="auth-title">Sign in</h1>
+            <p class="auth-subtitle">Đăng nhập tài khoản của bạn để tiếp tục</p>
         </div>
 
         @if (session('error'))
-            <div style="background:#fee2e2;color:#dc2626;padding:12px;border-radius:8px;font-size:0.85rem;margin-bottom:16px;border:1px solid #fecaca;">
-                <i class="fas fa-exclamation-circle"></i> {{ session('error') }}
+            <div style="background: rgba(239, 68, 68, 0.15); color: #f87171; padding: 12px 14px; border-radius: 8px; font-size: 0.85rem; margin-bottom: 18px; border: 1px solid rgba(239, 68, 68, 0.3); display: flex; align-items: center; gap: 8px;">
+                <span class="iconify" data-icon="ant-design:exclamation-circle-outlined" style="font-size: 16px;"></span>
+                <span>{{ session('error') }}</span>
             </div>
         @endif
 
-        <form method="POST" action="{{ route('login') }}">
+        {{-- 1. Federated sign-in buttons ABOVE sign-in method divider --}}
+        <div class="federated-buttons">
+            <a href="{{ route('auth.google') }}" class="social-btn" aria-label="Continue with Google">
+                <span class="iconify" data-icon="flat-color-icons:google"></span>
+                <span>Continue with Google</span>
+            </a>
+            <a href="javascript:void(0)" onclick="alert('Tính năng đăng nhập với Apple sẽ sớm ra mắt')" class="social-btn" aria-label="Continue with Apple">
+                <span class="iconify" data-icon="ant-design:apple-filled" style="color: #ffffff;"></span>
+                <span>Continue with Apple</span>
+            </a>
+        </div>
+
+        {{-- 2. Sign-in method divider: thin rule with "or" in the middle --}}
+        <div class="auth-divider-or" role="separator" aria-label="Or sign in with email">or</div>
+
+        {{-- 3. Native Form Semantics --}}
+        <form method="POST" action="{{ route('login') }}" autocomplete="on" novalidate>
             @csrf
+
+            {{-- Labeled email/username field (<input autocomplete="username">) --}}
             <div class="form-group">
-                <label for="username" class="form-label">Tên tài khoản hoặc Email</label>
-                <input id="username" type="text" class="form-input" name="username" value="{{ old('username') }}" required autofocus placeholder="Nhập tài khoản">
+                <label for="username" class="form-label">Email or Username</label>
+                <input id="username" 
+                       type="text" 
+                       class="form-input" 
+                       name="username" 
+                       autocomplete="username" 
+                       value="{{ old('username') }}" 
+                       required 
+                       autofocus 
+                       placeholder="name@example.com">
                 @error('username')
-                    <span class="form-error">{{ $message }}</span>
+                    <span class="form-error" role="alert">{{ $message }}</span>
                 @enderror
             </div>
 
+            {{-- Labeled password field (<input type="password" autocomplete="current-password">) with visibility toggle --}}
             <div class="form-group">
-                <label for="password" class="form-label">Mật khẩu</label>
-                <input id="password" type="password" class="form-input" name="password" required placeholder="••••••••">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                    <label for="password" class="form-label" style="margin-bottom: 0;">Password</label>
+                    @if (Route::has('password.request'))
+                        <a href="{{ route('password.request') }}" style="font-size: 0.82rem; color: var(--yuki-gold, #E8B33C); text-decoration: none;">Quên mật khẩu?</a>
+                    @endif
+                </div>
+
+                <div class="password-input-wrapper">
+                    <input id="password" 
+                           type="password" 
+                           class="form-input" 
+                           name="password" 
+                           autocomplete="current-password" 
+                           required 
+                           placeholder="••••••••">
+                    <button type="button" 
+                            class="password-toggle-btn" 
+                            id="passwordToggleBtn"
+                            aria-label="Show password" 
+                            onclick="togglePasswordVisibility('password', this)">
+                        <span class="iconify eye-show" data-icon="ant-design:eye-outlined"></span>
+                        <span class="iconify eye-hide" data-icon="ant-design:eye-invisible-outlined" style="display: none;"></span>
+                    </button>
+                </div>
                 @error('password')
-                    <span class="form-error">{{ $message }}</span>
+                    <span class="form-error" role="alert">{{ $message }}</span>
                 @enderror
             </div>
 
-            <div class="form-group" style="display:flex;justify-content:space-between;align-items:center;">
-                <div style="display:flex;align-items:center;gap:6px;font-size:0.85rem;">
-                    <input type="checkbox" name="remember" id="remember" {{ old('remember') ? 'checked' : '' }} style="cursor:pointer;">
-                    <label for="remember" style="cursor:pointer;color:#666;">Ghi nhớ</label>
+            <div class="form-group" style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
+                <div style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem;">
+                    <input type="checkbox" name="remember" id="remember" {{ old('remember') ? 'checked' : '' }} style="cursor: pointer; accent-color: var(--yuki-gold, #E8B33C); width: 16px; height: 16px;">
+                    <label for="remember" style="cursor: pointer; color: #94a3b8; user-select: none;">Ghi nhớ đăng nhập</label>
                 </div>
-                @if (Route::has('password.request'))
-                    <a href="{{ route('password.request') }}" style="font-size:0.85rem;color:var(--primary);text-decoration:none;">Quên mật khẩu?</a>
-                @endif
             </div>
 
-            <button type="submit" class="auth-btn">
-                Đăng Nhập
+            {{-- <button type="submit"> labeled "Sign in" so Enter submits --}}
+            <button type="submit" class="auth-btn" id="submitLoginBtn">
+                Sign in
             </button>
         </form>
-
-        @if (config_get('login_social.google.active', false) || config_get('login_social.facebook.active', false))
-            <div class="social-divider">Hoặc tiếp tục với</div>
-            
-            @if (config_get('login_social.google.active', false))
-                <a href="{{ route('auth.google') }}" class="social-btn">
-                    <span class="iconify" data-icon="flat-color-icons:google" style="font-size:1.2rem;"></span>
-                    Google
-                </a>
-            @endif
-            
-            @if (config_get('login_social.facebook.active', false))
-                <a href="{{ route('auth.facebook') }}" class="social-btn">
-                    <span class="iconify" data-icon="logos:facebook" style="font-size:1.2rem;"></span>
-                    Facebook
-                </a>
-            @endif
-        @endif
 
         <div class="auth-links">
             Chưa có tài khoản? <a href="{{ route('register') }}">Đăng ký ngay</a>
         </div>
     </div>
 </div>
+
+<script>
+    function togglePasswordVisibility(inputId, btn) {
+        var input = document.getElementById(inputId);
+        if (!input) return;
+        var isPassword = input.type === 'password';
+        input.type = isPassword ? 'text' : 'password';
+        btn.setAttribute('aria-label', isPassword ? 'Hide password' : 'Show password');
+        
+        var eyeShow = btn.querySelector('.eye-show');
+        var eyeHide = btn.querySelector('.eye-hide');
+        if (eyeShow && eyeHide) {
+            eyeShow.style.display = isPassword ? 'none' : 'inline';
+            eyeHide.style.display = isPassword ? 'inline' : 'none';
+        }
+    }
+</script>
 @endsection

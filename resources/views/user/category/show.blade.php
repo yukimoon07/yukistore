@@ -66,10 +66,63 @@
                 </div>
             </form>
 
+            {{-- Dismissible Chips cho các bộ lọc đang chọn --}}
+            @php
+                $hasActiveFilters = request()->hasAny(['code', 'price_from', 'price_to', 'status', 'sort']);
+            @endphp
+            @if($hasActiveFilters)
+                <div class="yk-active-chips" style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 16px 0 24px 0;">
+                    <span style="font-size: 0.8rem; color: #94a3b8; font-weight: 600;">Bộ lọc đang áp dụng:</span>
+                    @if(request('code'))
+                        <span class="yk-chip">
+                            Mã: #{{ request('code') }}
+                            <a href="{{ request()->fullUrlWithQuery(['code' => null]) }}" class="yk-chip__remove" aria-label="Xóa bộ lọc mã tài khoản">
+                                <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                            </a>
+                        </span>
+                    @endif
+                    @if(request('price_from'))
+                        <span class="yk-chip">
+                            Giá từ: {{ number_format(request('price_from')) }} đ
+                            <a href="{{ request()->fullUrlWithQuery(['price_from' => null]) }}" class="yk-chip__remove" aria-label="Xóa bộ lọc giá từ">
+                                <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                            </a>
+                        </span>
+                    @endif
+                    @if(request('price_to'))
+                        <span class="yk-chip">
+                            Giá đến: {{ number_format(request('price_to')) }} đ
+                            <a href="{{ request()->fullUrlWithQuery(['price_to' => null]) }}" class="yk-chip__remove" aria-label="Xóa bộ lọc giá đến">
+                                <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                            </a>
+                        </span>
+                    @endif
+                    @if(request('status'))
+                        <span class="yk-chip">
+                            Trạng thái: {{ request('status') === 'available' ? 'Còn hàng' : 'Đã bán' }}
+                            <a href="{{ request()->fullUrlWithQuery(['status' => null]) }}" class="yk-chip__remove" aria-label="Xóa bộ lọc trạng thái">
+                                <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                            </a>
+                        </span>
+                    @endif
+                    @if(request('sort'))
+                        <span class="yk-chip">
+                            Sắp xếp: {{ request('sort') === 'price_asc' ? 'Giá thấp → cao' : (request('sort') === 'price_desc' ? 'Giá cao → thấp' : 'Cũ nhất') }}
+                            <a href="{{ request()->fullUrlWithQuery(['sort' => null]) }}" class="yk-chip__remove" aria-label="Xóa bộ lọc sắp xếp">
+                                <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                            </a>
+                        </span>
+                    @endif
+                    <a href="{{ url()->current() }}" style="font-size: 0.78rem; color: #f87171; text-decoration: none; margin-left: 4px; font-weight: 600;">
+                        Xóa tất cả
+                    </a>
+                </div>
+            @endif
+
             {{-- Danh sách tài khoản --}}
             <div class="yk-grid yk-grid--account">
                 @forelse($accounts as $account)
-                    <article class="yk-tile yk-account">
+                    <article class="yk-tile yk-account" style="position: relative;">
                         <div class="yk-tile__media">
                             <a href="{{ route('account.show', ['id' => $account->id]) }}" aria-label="Xem chi tiết tài khoản #{{ $account->id }}">
                                 <img src="{{ $account->thumb }}" alt="Ảnh xem trước tài khoản #{{ $account->id }}"
@@ -77,13 +130,45 @@
                                      onerror="this.style.visibility='hidden'">
                             </a>
                             <span class="yk-account__code">#{{ $account->id }}</span>
-                            <span class="yk-account__status {{ $account->status === 'available' ? 'yk-account__status--in' : 'yk-account__status--out' }}">
+                            
+                            {{-- Fully Rounded Pill cho trạng thái --}}
+                            <span class="yk-pill {{ $account->status === 'available' ? 'yk-pill--success' : 'yk-pill--muted' }}" style="position: absolute; top: var(--space-2); right: var(--space-2); z-index: 2;">
+                                <i class="fa-solid {{ $account->status === 'available' ? 'fa-circle-check' : 'fa-circle-xmark' }}" style="font-size: 10px;"></i>
                                 {{ $account->status === 'available' ? 'Còn hàng' : 'Đã bán' }}
                             </span>
+
                             <span class="yk-tile__price">{{ number_format($account->price) }} đ</span>
                         </div>
 
                         <div class="yk-tile__body">
+                            {{-- Category Tag & Meatball Button --}}
+                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                                <span class="yk-tag">
+                                    <i class="fa-solid fa-tag" style="font-size: 10px; color: var(--yuki-gold, #E8B33C);"></i>
+                                    {{ $category->name }}
+                                </span>
+
+                                {{-- Horizontal-dots Meatball Button (button[aria-haspopup="menu"]) --}}
+                                <div style="position: relative;">
+                                    <button type="button" 
+                                            class="yk-meatball-btn" 
+                                            aria-haspopup="menu" 
+                                            aria-expanded="false" 
+                                            aria-label="Tùy chọn khác cho tài khoản #{{ $account->id }}"
+                                            onclick="toggleCardMeatball(this, event)">
+                                        <i class="fa-solid fa-ellipsis"></i>
+                                    </button>
+                                    <div class="yk-meatball-menu" role="menu" style="display: none; position: absolute; right: 0; top: 100%; min-width: 150px; background: #0d1322; border: 1px solid rgba(255,255,255,0.12); border-radius: 8px; box-shadow: 0 12px 28px rgba(0,0,0,0.7); z-index: 100; padding: 4px;">
+                                        <a href="{{ route('account.show', ['id' => $account->id]) }}" role="menuitem" class="account-menu-item" style="padding: 6px 10px; font-size: 0.8rem;">
+                                            <span class="iconify" data-icon="ant-design:eye-outlined"></span> Xem chi tiết
+                                        </a>
+                                        <button type="button" role="menuitem" class="account-menu-item" style="padding: 6px 10px; font-size: 0.8rem;" onclick="navigator.clipboard.writeText('{{ route('account.show', ['id' => $account->id]) }}'); alert('Đã sao chép link tài khoản!');">
+                                            <span class="iconify" data-icon="ant-design:copy-outlined"></span> Sao chép link
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
                             @php
                                 $details = is_array($account->details) ? $account->details : json_decode($account->details, true) ?? [];
                             @endphp
@@ -237,4 +322,39 @@
         margin-top: var(--space-8);
     }
 </style>
+@endpush
+
+@push('js')
+<script>
+    function toggleCardMeatball(btn, e) {
+        if (e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        var menu = btn.nextElementSibling;
+        if (!menu) return;
+        var isOpen = menu.style.display === 'block';
+        document.querySelectorAll('.yk-meatball-menu').forEach(function(m) {
+            m.style.display = 'none';
+        });
+        document.querySelectorAll('.yk-meatball-btn').forEach(function(b) {
+            b.setAttribute('aria-expanded', 'false');
+        });
+        if (!isOpen) {
+            menu.style.display = 'block';
+            btn.setAttribute('aria-expanded', 'true');
+        }
+    }
+
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.yk-meatball-btn') && !e.target.closest('.yk-meatball-menu')) {
+            document.querySelectorAll('.yk-meatball-menu').forEach(function(m) {
+                m.style.display = 'none';
+            });
+            document.querySelectorAll('.yk-meatball-btn').forEach(function(b) {
+                b.setAttribute('aria-expanded', 'false');
+            });
+        }
+    });
+</script>
 @endpush
