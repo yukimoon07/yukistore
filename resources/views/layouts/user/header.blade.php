@@ -620,11 +620,12 @@
             <li><a href="/service" class="nav-link-item {{ request()->is('service*') ? 'active' : '' }}"><span class="iconify"
                         data-icon="ant-design:thunderbolt-outlined"></span> {{ __('shop.nav_services') }}</a></li>
             
-            <!-- MASTER-DETAIL SUBMENU: DANH MỤC -->
+            <!-- MASTER-DETAIL SUBMENU: DANH MỤC (Website Navigation with Disclosure Button) -->
             <li class="nav-categories-dropdown" id="navCategoriesDropdown">
-                <a href="javascript:void(0)" class="nav-link-item" id="navCategoriesTrigger"><span class="iconify"
-                        data-icon="ant-design:appstore-outlined"></span> {{ __('shop.nav_categories') }} <span class="iconify nav-arrow"
-                        data-icon="ant-design:down-outlined" style="font-size:0.65rem;"></span></a>
+                <button type="button" class="nav-link-item nav-disclosure-btn" id="navCategoriesTrigger" aria-expanded="false" aria-controls="navCatDropdownPanel">
+                    <span class="iconify" data-icon="ant-design:appstore-outlined"></span> {{ __('shop.nav_categories') }} 
+                    <span class="iconify nav-arrow" data-icon="ant-design:down-outlined" style="font-size:0.65rem;"></span>
+                </button>
                 
                 @php
                     $navCategories = \App\Models\Category::with('gameGroup')->where('active', 1)->get();
@@ -1123,44 +1124,81 @@
                 <span class="iconify" data-icon="ant-design:plus-circle-outlined"></span> {{ __('shop.nav_deposit') }}
             </a>
 
-            <!-- Auth / Login State -->
+            <!-- Auth / Login State: 32px Round Avatar Button & Radix DropdownMenu Panel -->
             @if(Auth::check())
-            <div class="nav-avatar-wrapper" id="avatarWrapper" style="position: relative; flex-shrink: 0;">
-                <div class="nav-user-profile" onclick="toggleAvatarMenu()"
-                    style="display:flex;align-items:center;gap:10px;cursor:pointer;">
-                    <div style="text-align:right;">
-                        <div style="font-weight:600;font-size:0.85rem;line-height:1.2;color:#f8fafc;">{{ Auth::user()->username }}</div>
-                        <div style="font-size:0.75rem;color:var(--yuki-gold, #E8B33C);">{{ number_format(Auth::user()->balance) }}đ</div>
-                    </div>
-                    <button class="nav-avatar" id="avatarBtn" aria-label="User menu" style="background: linear-gradient(135deg, #E8B33C, #C2922A); color: #fff; border: 1px solid rgba(255,255,255,0.2); width:34px; height:34px; border-radius:50%; font-weight:700; cursor:pointer;">
-                        {{ strtoupper(substr(Auth::user()->username, 0, 1)) }}
-                    </button>
+            <div class="nav-avatar-wrapper" id="avatarWrapper" style="position: relative; flex-shrink: 0; display: flex; align-items: center; gap: 8px;">
+                <!-- User Balance Preview -->
+                <div class="nav-user-balance-meta" style="text-align: right; line-height: 1.25;">
+                    <div style="font-weight: 600; font-size: 0.82rem; color: #f8fafc; max-width: 110px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ Auth::user()->username }}</div>
+                    <div style="font-size: 0.74rem; color: var(--yuki-gold, #E8B33C); font-weight: 700;">{{ number_format(Auth::user()->balance ?? 0) }}đ</div>
                 </div>
-                <div class="avatar-dropdown" id="avatarDropdown" style="display:none; position:absolute; right:0; top:calc(100% + 8px); width:220px; background: #0d1322; border: 1px solid rgba(255,255,255,0.12); border-radius:12px; box-shadow: 0 16px 36px rgba(0,0,0,0.7); z-index:10000; padding:8px 0;">
-                    <div class="dropdown-header" style="padding: 10px 16px;">
-                        <div class="dropdown-name" style="color: #f8fafc; font-weight: 700;">{{ Auth::user()->username }}</div>
-                        <div class="dropdown-email" style="color: #94a3b8; font-size: 0.8rem;">{{ Auth::user()->email ?? '' }}</div>
+
+                <!-- 32px Round Avatar Button: <button aria-haspopup="menu" aria-expanded> -->
+                <button type="button"
+                        class="nav-avatar-btn"
+                        id="userMenuTrigger"
+                        aria-haspopup="menu"
+                        aria-expanded="false"
+                        aria-controls="userMenuPanel"
+                        aria-label="User account menu"
+                        onclick="toggleUserAccountMenu(event)">
+                    @if(Auth::user()->avatar)
+                        <img src="{{ Auth::user()->avatar }}" alt="{{ Auth::user()->username }}">
+                    @else
+                        <span>{{ strtoupper(substr(Auth::user()->username, 0, 1)) }}</span>
+                    @endif
+                </button>
+
+                <!-- Radix DropdownMenu (align="end") panel under it, flush with avatar's right edge -->
+                <div class="nav-account-menu"
+                     id="userMenuPanel"
+                     role="menu"
+                     aria-labelledby="userMenuTrigger"
+                     style="display: none;">
+                    
+                    <!-- Label: Name & Email (not a menu item) -->
+                    <div class="account-menu-label" role="presentation">
+                        <div class="account-menu-name">{{ Auth::user()->username }}</div>
+                        <div class="account-menu-email">{{ Auth::user()->email ?? (Auth::user()->username . '@shopgame.vn') }}</div>
+                        <div class="account-menu-balance">
+                            <span class="iconify" data-icon="ant-design:wallet-outlined"></span>
+                            {{ number_format(Auth::user()->balance ?? 0) }}đ
+                        </div>
                     </div>
-                    <div class="dropdown-divider" style="border-top: 1px solid rgba(255,255,255,0.08); margin: 6px 0;"></div>
-                    <a href="/profile" class="dropdown-item" style="display:flex; align-items:center; gap:8px; padding:8px 16px; color: #cbd5e1; text-decoration:none; font-size:0.85rem;">
-                        <span class="iconify" data-icon="ant-design:dashboard-outlined"></span> {{ __('shop.nav_profile') }}
+
+                    <div role="separator" class="account-menu-separator"></div>
+
+                    <!-- Profile and Settings (role="menuitem") -->
+                    <a href="/profile" class="account-menu-item" role="menuitem" tabindex="0">
+                        <span class="iconify" data-icon="ant-design:user-outlined"></span>
+                        <span>{{ __('shop.nav_profile') }} (Profile)</span>
                     </a>
-                    <a href="{{ route('profile.deposit-card') }}" class="dropdown-item" style="display:flex; align-items:center; gap:8px; padding:8px 16px; color: #cbd5e1; text-decoration:none; font-size:0.85rem;">
-                        <span class="iconify" data-icon="ant-design:dollar-outlined"></span> {{ __('shop.nav_deposit') }}
+
+                    <a href="/profile#settings" class="account-menu-item" role="menuitem" tabindex="0">
+                        <span class="iconify" data-icon="ant-design:setting-outlined"></span>
+                        <span>Cài đặt (Settings)</span>
                     </a>
-                    <a href="{{ route('profile.transaction-history') }}" class="dropdown-item" style="display:flex; align-items:center; gap:8px; padding:8px 16px; color: #cbd5e1; text-decoration:none; font-size:0.85rem;">
-                        <span class="iconify" data-icon="ant-design:history-outlined"></span> {{ __('shop.nav_history') }}
+
+                    <a href="{{ route('profile.transaction-history') }}" class="account-menu-item" role="menuitem" tabindex="0">
+                        <span class="iconify" data-icon="ant-design:history-outlined"></span>
+                        <span>{{ __('shop.nav_history') }}</span>
                     </a>
-                    @if (Auth::check() && Auth()->user()->role == 'admin')
-                    <a href="{{ route('admin.index') }}" target="_blank" class="dropdown-item" style="display:flex; align-items:center; gap:8px; padding:10px 16px; color: #fbbf24; text-decoration:none; font-size:0.85rem; font-weight: 700; background: rgba(245, 158, 11, 0.1); border-radius: 6px; margin: 4px 8px;">
-                        <span class="iconify" data-icon="ant-design:dashboard-outlined" style="font-size: 16px;"></span> {{ __('shop.nav_admin') }} <span style="font-size: 10px; background: #fbbf24; color: #0b0f19; padding: 1px 6px; border-radius: 4px; margin-left: auto; font-weight: 800;">ADMIN</span>
+
+                    @if(Auth::user()->role === 'admin')
+                    <a href="{{ route('admin.index') }}" target="_blank" class="account-menu-item account-menu-item--admin" role="menuitem" tabindex="0">
+                        <span class="iconify" data-icon="ant-design:dashboard-outlined"></span>
+                        <span>Admin Panel</span>
                     </a>
                     @endif
-                    <div class="dropdown-divider" style="border-top: 1px solid rgba(255,255,255,0.08); margin: 6px 0;"></div>
-                    <form method="POST" action="{{ route('logout') }}" style="display: inline;width:100%;">
+
+                    <div role="separator" class="account-menu-separator"></div>
+
+                    <!-- Sign out last -->
+                    <form method="POST" action="{{ route('logout') }}" style="margin: 0; width: 100%;">
                         @csrf
-                        <button type="submit" class="dropdown-item dropdown-logout" style="width:100%; text-align:left; background:transparent; border:none; cursor:pointer; color:#ef4444; display:flex; align-items:center; gap:8px; padding:8px 16px; font-size:0.85rem;">
-                            <span class="iconify" data-icon="ant-design:logout-outlined"></span> {{ __('shop.nav_logout') }}
+                        <button type="submit" class="account-menu-item account-menu-item--danger" role="menuitem" tabindex="0">
+                            <span class="iconify" data-icon="ant-design:logout-outlined"></span>
+                            <span>{{ __('shop.nav_logout') }} (Sign out)</span>
                         </button>
                     </form>
                 </div>
@@ -1192,6 +1230,29 @@
         }
     }
 
+    // Toggle User Account Menu (Open on click, never hover only)
+    function toggleUserAccountMenu(e) {
+        if (e) e.stopPropagation();
+        var trigger = document.getElementById('userMenuTrigger');
+        var panel = document.getElementById('userMenuPanel');
+        if (!panel || !trigger) return;
+
+        var isOpen = panel.style.display === 'block';
+        if (isOpen) {
+            panel.style.display = 'none';
+            trigger.setAttribute('aria-expanded', 'false');
+        } else {
+            // Close category dropdown if open
+            var catDropdown = document.getElementById('navCategoriesDropdown');
+            if (catDropdown) catDropdown.classList.remove('open');
+            var catTrigger = document.getElementById('navCategoriesTrigger');
+            if (catTrigger) catTrigger.setAttribute('aria-expanded', 'false');
+
+            panel.style.display = 'block';
+            trigger.setAttribute('aria-expanded', 'true');
+        }
+    }
+
     // Toggle Dropdown On Click & Close on Outside Click
     document.addEventListener('DOMContentLoaded', function() {
         var catDropdown = document.getElementById('navCategoriesDropdown');
@@ -1200,7 +1261,14 @@
         if (catTrigger && catDropdown) {
             catTrigger.addEventListener('click', function(e) {
                 e.stopPropagation();
-                catDropdown.classList.toggle('open');
+                var isOpen = catDropdown.classList.toggle('open');
+                catTrigger.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+                
+                // Close user menu if open
+                var userMenuPanel = document.getElementById('userMenuPanel');
+                var userMenuTrigger = document.getElementById('userMenuTrigger');
+                if (userMenuPanel) userMenuPanel.style.display = 'none';
+                if (userMenuTrigger) userMenuTrigger.setAttribute('aria-expanded', 'false');
             });
         }
 
@@ -1208,20 +1276,31 @@
         document.addEventListener('click', function(e) {
             if (catDropdown && !catDropdown.contains(e.target)) {
                 catDropdown.classList.remove('open');
+                if (catTrigger) catTrigger.setAttribute('aria-expanded', 'false');
             }
-            var avatarDropdown = document.getElementById('avatarDropdown');
             var avatarWrapper = document.getElementById('avatarWrapper');
-            if (avatarDropdown && avatarWrapper && !avatarWrapper.contains(e.target)) {
-                avatarDropdown.style.display = 'none';
+            var userMenuPanel = document.getElementById('userMenuPanel');
+            var userMenuTrigger = document.getElementById('userMenuTrigger');
+            if (avatarWrapper && !avatarWrapper.contains(e.target)) {
+                if (userMenuPanel) userMenuPanel.style.display = 'none';
+                if (userMenuTrigger) userMenuTrigger.setAttribute('aria-expanded', 'false');
             }
         });
 
         // Close on Esc key
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
-                if (catDropdown) catDropdown.classList.remove('open');
-                var avatarDropdown = document.getElementById('avatarDropdown');
-                if (avatarDropdown) avatarDropdown.style.display = 'none';
+                if (catDropdown) {
+                    catDropdown.classList.remove('open');
+                    if (catTrigger) catTrigger.setAttribute('aria-expanded', 'false');
+                }
+                var userMenuPanel = document.getElementById('userMenuPanel');
+                var userMenuTrigger = document.getElementById('userMenuTrigger');
+                if (userMenuPanel) userMenuPanel.style.display = 'none';
+                if (userMenuTrigger) {
+                    userMenuTrigger.setAttribute('aria-expanded', 'false');
+                    userMenuTrigger.focus();
+                }
             }
         });
     });
@@ -1238,13 +1317,5 @@
         var overlay = document.getElementById('navOverlay');
         if (nav) nav.classList.remove('show');
         if (overlay) overlay.classList.remove('show');
-    }
-
-    // Avatar Menu Toggle
-    function toggleAvatarMenu() {
-        var dropdown = document.getElementById('avatarDropdown');
-        if (dropdown) {
-            dropdown.style.display = (dropdown.style.display === 'block') ? 'none' : 'block';
-        }
     }
 </script>
