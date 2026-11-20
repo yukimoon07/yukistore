@@ -627,8 +627,8 @@
                         data-icon="ant-design:down-outlined" style="font-size:0.65rem;"></span></a>
                 
                 @php
-                    $navCategories = \App\Models\Category::where('active', 1)->get();
-                    $navRandomCategories = \App\Models\RandomCategory::where('active', 1)->get();
+                    $navCategories = \App\Models\Category::with('gameGroup')->where('active', 1)->get();
+                    $navRandomCategories = \App\Models\RandomCategory::with('gameGroup')->where('active', 1)->get();
                     $navServices = \App\Models\GameService::where('active', 1)->get();
 
                     // 1. Cày Thuê (Game Boosting)
@@ -637,7 +637,7 @@
                     // 2. Acc Liên Quân (Arena of Valor)
                     $groupLienQuan = collect();
                     foreach($navRandomCategories as $rcat) {
-                        if ($rcat->game_group_id == 1 || str_contains($rcat->slug, 'lien-quan') || str_contains($rcat->slug, 'lq')) {
+                        if (str_contains($rcat->slug, 'lien-quan') || str_contains($rcat->slug, 'lq') || ($rcat->gameGroup && str_contains($rcat->gameGroup->slug, 'lien-quan'))) {
                             $badge = null;
                             if (str_contains($rcat->slug, '2k')) $badge = '2K';
                             elseif (str_contains($rcat->slug, '20k')) $badge = '20K';
@@ -657,7 +657,7 @@
                         }
                     }
                     foreach($navCategories as $cat) {
-                        if ($cat->game_group_id == 1 || str_contains($cat->slug, 'lien-quan')) {
+                        if (str_contains($cat->slug, 'lien-quan') || ($cat->gameGroup && str_contains($cat->gameGroup->slug, 'lien-quan'))) {
                             $badge = null;
                             if (str_contains($cat->slug, 'trang-thong-tin')) $badge = 'TTT';
                             elseif (str_contains($cat->slug, 'reg')) $badge = 'REG';
@@ -677,7 +677,7 @@
                     // 3. Acc Roblox
                     $groupRoblox = collect();
                     foreach($navCategories as $cat) {
-                        if ($cat->game_group_id == 3 || str_contains($cat->slug, 'blox') || str_contains($cat->slug, 'egg') || str_contains($cat->slug, 'roblox')) {
+                        if (str_contains($cat->slug, 'blox') || str_contains($cat->slug, 'egg') || str_contains($cat->slug, 'roblox') || ($cat->gameGroup && str_contains($cat->gameGroup->slug, 'blox'))) {
                             $groupRoblox->push([
                                 'name' => $cat->name,
                                 'url' => route('category.index', ['slug' => $cat->slug]),
@@ -689,12 +689,12 @@
                         }
                     }
                     foreach($navRandomCategories as $rcat) {
-                        if ($rcat->game_group_id == 3 || str_contains($rcat->slug, 'blox') || str_contains($rcat->slug, 'roblox')) {
+                        if (str_contains($rcat->slug, 'blox') || str_contains($rcat->slug, 'roblox') || ($rcat->gameGroup && str_contains($rcat->gameGroup->slug, 'blox'))) {
                             $groupRoblox->push([
                                 'name' => $rcat->name,
                                 'url' => route('random.index', ['slug' => $rcat->slug]),
                                 'thumbnail' => $rcat->thumbnail,
-                                'badge' => '99K',
+                                'badge' => 'RANDOM',
                                 'badge_style' => 'background: rgba(168, 85, 247, 0.2); color: #a855f7; border: 1px solid rgba(168, 85, 247, 0.4);',
                                 'fallback_icon' => 'ant-design:gift-outlined',
                             ]);
@@ -704,7 +704,7 @@
                     // 4. Acc Genshin
                     $groupGenshin = collect();
                     $sortedGenshin = $navCategories->filter(function($c) {
-                        return $c->game_group_id == 4 || str_contains($c->slug, 'genshin');
+                        return str_contains($c->slug, 'genshin') || ($c->gameGroup && str_contains($c->gameGroup->slug, 'genshin'));
                     })->sortBy(function($c) {
                         return str_contains($c->slug, 'reroll') ? 1 : 2;
                     });
@@ -713,7 +713,7 @@
                             'name' => $cat->name,
                             'url' => route('category.index', ['slug' => $cat->slug]),
                             'thumbnail' => $cat->thumbnail,
-                            'badge' => str_contains($cat->slug, 'vip') ? 'VIP' : 'LUCK',
+                            'badge' => str_contains($cat->slug, 'reroll') ? 'REROLL' : 'VIP',
                             'badge_style' => 'background: rgba(236, 72, 153, 0.2); color: #ec4899; border: 1px solid rgba(236, 72, 153, 0.4);',
                             'fallback_icon' => 'ant-design:star-outlined',
                         ]);
@@ -722,7 +722,7 @@
                     // 5. Acc FCO / FCM
                     $groupFC = collect();
                     $sortedFC = $navCategories->filter(function($c) {
-                        return $c->game_group_id == 5 || str_contains($c->slug, 'fc') || str_contains($c->slug, 'fifa');
+                        return str_contains($c->slug, 'fc') || str_contains($c->slug, 'fifa') || ($c->gameGroup && str_contains($c->gameGroup->slug, 'fc'));
                     })->sortBy(function($c) {
                         return str_contains($c->slug, 'mobile') ? 1 : 2;
                     });
@@ -736,13 +736,45 @@
                             'fallback_icon' => 'ant-design:dribbble-circle-outlined',
                         ]);
                     }
+
+                    // 6. Acc Valorant
+                    $groupValorant = collect();
+                    foreach($navCategories as $cat) {
+                        if (str_contains($cat->slug, 'valorant') || ($cat->gameGroup && str_contains($cat->gameGroup->slug, 'valorant'))) {
+                            $groupValorant->push([
+                                'name' => $cat->name,
+                                'url' => route('category.index', ['slug' => $cat->slug]),
+                                'thumbnail' => $cat->thumbnail,
+                                'badge' => 'VAL',
+                                'badge_style' => 'background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.4);',
+                                'fallback_icon' => 'ant-design:fire-outlined',
+                            ]);
+                        }
+                    }
+
+                    // 7. Acc Arknights
+                    $groupArknights = collect();
+                    foreach($navCategories as $cat) {
+                        if (str_contains($cat->slug, 'ark') || ($cat->gameGroup && str_contains($cat->gameGroup->slug, 'ark'))) {
+                            $groupArknights->push([
+                                'name' => $cat->name,
+                                'url' => route('category.index', ['slug' => $cat->slug]),
+                                'thumbnail' => $cat->thumbnail,
+                                'badge' => str_contains($cat->slug, 'reroll') ? 'REROLL' : 'HOT',
+                                'badge_style' => 'background: rgba(14, 165, 233, 0.2); color: #0ea5e9; border: 1px solid rgba(14, 165, 233, 0.4);',
+                                'fallback_icon' => 'ant-design:compass-outlined',
+                            ]);
+                        }
+                    }
+
+                    $activeNavCatTab = ($groupBoosting->count() > 0) ? 'cat-panel-boosting' : 'cat-panel-lienquan';
                 @endphp
 
                 <!-- Unified Master-Detail Dropdown Panel -->
                 <div class="nav-cat-dropdown-panel" id="navCatDropdownPanel">
-                    <!-- Left: Category Tabs (5 Groups) -->
+                    <!-- Left: Category Tabs (7 Groups) -->
                     <div class="nav-cat-tabs">
-                        <div class="cat-tab-item active" data-target="cat-panel-boosting" onmouseenter="switchNavCatTab(this, 'cat-panel-boosting')" onclick="switchNavCatTab(this, 'cat-panel-boosting')">
+                        <div class="cat-tab-item {{ $activeNavCatTab === 'cat-panel-boosting' ? 'active' : '' }}" data-target="cat-panel-boosting" onmouseenter="switchNavCatTab(this, 'cat-panel-boosting')" onclick="switchNavCatTab(this, 'cat-panel-boosting')">
                             <span class="cat-tab-icon" style="background: rgba(232, 179, 60, 0.15); color: #C2922A;">
                                 <span class="iconify" data-icon="ant-design:thunderbolt-filled"></span>
                             </span>
@@ -751,7 +783,7 @@
                             <span class="cat-tab-arrow"><span class="iconify" data-icon="ant-design:right-outlined"></span></span>
                         </div>
 
-                        <div class="cat-tab-item" data-target="cat-panel-lienquan" onmouseenter="switchNavCatTab(this, 'cat-panel-lienquan')" onclick="switchNavCatTab(this, 'cat-panel-lienquan')">
+                        <div class="cat-tab-item {{ $activeNavCatTab === 'cat-panel-lienquan' ? 'active' : '' }}" data-target="cat-panel-lienquan" onmouseenter="switchNavCatTab(this, 'cat-panel-lienquan')" onclick="switchNavCatTab(this, 'cat-panel-lienquan')">
                             <span class="cat-tab-icon" style="background: rgba(245, 158, 11, 0.15); color: #f59e0b;">
                                 <span class="iconify" data-icon="ant-design:trophy-filled"></span>
                             </span>
@@ -786,19 +818,37 @@
                             <span class="cat-tab-count" style="background: rgba(16, 185, 129, 0.15); color: #34d399;">{{ $groupFC->count() }}</span>
                             <span class="cat-tab-arrow"><span class="iconify" data-icon="ant-design:right-outlined"></span></span>
                         </div>
+
+                        <div class="cat-tab-item" data-target="cat-panel-valorant" onmouseenter="switchNavCatTab(this, 'cat-panel-valorant')" onclick="switchNavCatTab(this, 'cat-panel-valorant')">
+                            <span class="cat-tab-icon" style="background: rgba(239, 68, 68, 0.15); color: #ef4444;">
+                                <span class="iconify" data-icon="ant-design:fire-filled"></span>
+                            </span>
+                            <span class="cat-tab-name">Acc Valorant</span>
+                            <span class="cat-tab-count" style="background: rgba(239, 68, 68, 0.15); color: #f87171;">{{ $groupValorant->count() }}</span>
+                            <span class="cat-tab-arrow"><span class="iconify" data-icon="ant-design:right-outlined"></span></span>
+                        </div>
+
+                        <div class="cat-tab-item" data-target="cat-panel-arknights" onmouseenter="switchNavCatTab(this, 'cat-panel-arknights')" onclick="switchNavCatTab(this, 'cat-panel-arknights')">
+                            <span class="cat-tab-icon" style="background: rgba(14, 165, 233, 0.15); color: #0ea5e9;">
+                                <span class="iconify" data-icon="ant-design:compass-filled"></span>
+                            </span>
+                            <span class="cat-tab-name">Acc Arknights</span>
+                            <span class="cat-tab-count" style="background: rgba(14, 165, 233, 0.15); color: #38bdf8;">{{ $groupArknights->count() }}</span>
+                            <span class="cat-tab-arrow"><span class="iconify" data-icon="ant-design:right-outlined"></span></span>
+                        </div>
                     </div>
 
                     <!-- Right: Content Panes -->
                     <div class="nav-cat-content">
                         <!-- 1. CÀY THUÊ -->
-                        <div class="cat-detail-panel active" id="cat-panel-boosting">
+                        <div class="cat-detail-panel {{ $activeNavCatTab === 'cat-panel-boosting' ? 'active' : '' }}" id="cat-panel-boosting">
                             <div class="cat-detail-header">
                                 <span class="iconify" data-icon="ant-design:thunderbolt-filled" style="color: #C2922A;"></span>
                                 <span class="cat-detail-title" style="color: var(--yuki-gold, #E8B33C);">{{ __('shop.nav_cat_boosting') }}</span>
                                 <span class="cat-detail-subtitle">({{ $groupBoosting->count() }} {{ __('shop.nav_cat_count_services', ['count' => '']) }})</span>
                             </div>
                             <div class="cat-items-grid">
-                                @foreach($groupBoosting as $service)
+                                @forelse($groupBoosting as $service)
                                 @php
                                     $sBadge = null;
                                     $sBadgeStyle = '';
@@ -824,19 +874,23 @@
                                     <span class="cat-item-badge" style="{{ $sBadgeStyle }}">{{ $sBadge }}</span>
                                     @endif
                                 </a>
-                                @endforeach
+                                @empty
+                                <div style="grid-column: 1 / -1; padding: 20px; text-align: center; color: #888; font-size: 0.85rem;">
+                                    Dịch vụ cày thuê đang được cập nhật
+                                </div>
+                                @endforelse
                             </div>
                         </div>
 
                         <!-- 2. ACC LIÊN QUÂN -->
-                        <div class="cat-detail-panel" id="cat-panel-lienquan">
+                        <div class="cat-detail-panel {{ $activeNavCatTab === 'cat-panel-lienquan' ? 'active' : '' }}" id="cat-panel-lienquan">
                             <div class="cat-detail-header">
                                 <span class="iconify" data-icon="ant-design:trophy-filled" style="color: #f59e0b;"></span>
                                 <span class="cat-detail-title" style="color: #fbbf24;">{{ __('shop.nav_cat_lienquan') }}</span>
                                 <span class="cat-detail-subtitle">({{ $groupLienQuan->count() }} {{ __('shop.nav_cat_count_categories', ['count' => '']) }})</span>
                             </div>
                             <div class="cat-items-grid">
-                                @foreach($groupLienQuan as $item)
+                                @forelse($groupLienQuan as $item)
                                 <a href="{{ $item['url'] }}" class="cat-item-card">
                                     @if($item['thumbnail'])
                                     <img src="{{ $item['thumbnail'] }}" alt="" class="cat-item-thumb">
@@ -848,7 +902,11 @@
                                     <span class="cat-item-badge" style="{{ $item['badge_style'] }}">{{ $item['badge'] }}</span>
                                     @endif
                                 </a>
-                                @endforeach
+                                @empty
+                                <div style="grid-column: 1 / -1; padding: 20px; text-align: center; color: #888; font-size: 0.85rem;">
+                                    Đang cập nhật danh mục
+                                </div>
+                                @endforelse
                             </div>
                         </div>
 
@@ -860,7 +918,7 @@
                                 <span class="cat-detail-subtitle">({{ $groupRoblox->count() }} {{ __('shop.nav_cat_count_categories', ['count' => '']) }})</span>
                             </div>
                             <div class="cat-items-grid">
-                                @foreach($groupRoblox as $item)
+                                @forelse($groupRoblox as $item)
                                 <a href="{{ $item['url'] }}" class="cat-item-card">
                                     @if($item['thumbnail'])
                                     <img src="{{ $item['thumbnail'] }}" alt="" class="cat-item-thumb">
@@ -872,7 +930,11 @@
                                     <span class="cat-item-badge" style="{{ $item['badge_style'] }}">{{ $item['badge'] }}</span>
                                     @endif
                                 </a>
-                                @endforeach
+                                @empty
+                                <div style="grid-column: 1 / -1; padding: 20px; text-align: center; color: #888; font-size: 0.85rem;">
+                                    Đang cập nhật danh mục
+                                </div>
+                                @endforelse
                             </div>
                         </div>
 
@@ -884,7 +946,7 @@
                                 <span class="cat-detail-subtitle">({{ $groupGenshin->count() }} {{ __('shop.nav_cat_count_categories', ['count' => '']) }})</span>
                             </div>
                             <div class="cat-items-grid">
-                                @foreach($groupGenshin as $item)
+                                @forelse($groupGenshin as $item)
                                 <a href="{{ $item['url'] }}" class="cat-item-card">
                                     @if($item['thumbnail'])
                                     <img src="{{ $item['thumbnail'] }}" alt="" class="cat-item-thumb">
@@ -896,7 +958,11 @@
                                     <span class="cat-item-badge" style="{{ $item['badge_style'] }}">{{ $item['badge'] }}</span>
                                     @endif
                                 </a>
-                                @endforeach
+                                @empty
+                                <div style="grid-column: 1 / -1; padding: 20px; text-align: center; color: #888; font-size: 0.85rem;">
+                                    Đang cập nhật danh mục
+                                </div>
+                                @endforelse
                             </div>
                         </div>
 
@@ -908,7 +974,7 @@
                                 <span class="cat-detail-subtitle">({{ $groupFC->count() }} {{ __('shop.nav_cat_count_categories', ['count' => '']) }})</span>
                             </div>
                             <div class="cat-items-grid">
-                                @foreach($groupFC as $item)
+                                @forelse($groupFC as $item)
                                 <a href="{{ $item['url'] }}" class="cat-item-card">
                                     @if($item['thumbnail'])
                                     <img src="{{ $item['thumbnail'] }}" alt="" class="cat-item-thumb">
@@ -920,9 +986,72 @@
                                     <span class="cat-item-badge" style="{{ $item['badge_style'] }}">{{ $item['badge'] }}</span>
                                     @endif
                                 </a>
-                                @endforeach
+                                @empty
+                                <div style="grid-column: 1 / -1; padding: 20px; text-align: center; color: #888; font-size: 0.85rem;">
+                                    Đang cập nhật danh mục
+                                </div>
+                                @endforelse
                             </div>
                         </div>
+
+                        <!-- 6. ACC VALORANT -->
+                        <div class="cat-detail-panel" id="cat-panel-valorant">
+                            <div class="cat-detail-header">
+                                <span class="iconify" data-icon="ant-design:fire-filled" style="color: #ef4444;"></span>
+                                <span class="cat-detail-title" style="color: #f87171;">Acc Valorant</span>
+                                <span class="cat-detail-subtitle">({{ $groupValorant->count() }} danh mục)</span>
+                            </div>
+                            <div class="cat-items-grid">
+                                @forelse($groupValorant as $item)
+                                <a href="{{ $item['url'] }}" class="cat-item-card">
+                                    @if($item['thumbnail'])
+                                    <img src="{{ $item['thumbnail'] }}" alt="" class="cat-item-thumb">
+                                    @else
+                                    <span class="cat-item-thumb-fallback"><span class="iconify" data-icon="{{ $item['fallback_icon'] }}"></span></span>
+                                    @endif
+                                    <span class="cat-item-name">{{ $item['name'] }}</span>
+                                    @if($item['badge'])
+                                    <span class="cat-item-badge" style="{{ $item['badge_style'] }}">{{ $item['badge'] }}</span>
+                                    @endif
+                                </a>
+                                @empty
+                                <div style="grid-column: 1 / -1; padding: 20px; text-align: center; color: #888; font-size: 0.85rem;">
+                                    Đang cập nhật danh mục
+                                </div>
+                                @endforelse
+                            </div>
+                        </div>
+
+                        <!-- 7. ACC ARKNIGHTS -->
+                        <div class="cat-detail-panel" id="cat-panel-arknights">
+                            <div class="cat-detail-header">
+                                <span class="iconify" data-icon="ant-design:compass-filled" style="color: #0ea5e9;"></span>
+                                <span class="cat-detail-title" style="color: #38bdf8;">Acc Arknights</span>
+                                <span class="cat-detail-subtitle">({{ $groupArknights->count() }} danh mục)</span>
+                            </div>
+                            <div class="cat-items-grid">
+                                @forelse($groupArknights as $item)
+                                <a href="{{ $item['url'] }}" class="cat-item-card">
+                                    @if($item['thumbnail'])
+                                    <img src="{{ $item['thumbnail'] }}" alt="" class="cat-item-thumb">
+                                    @else
+                                    <span class="cat-item-thumb-fallback"><span class="iconify" data-icon="{{ $item['fallback_icon'] }}"></span></span>
+                                    @endif
+                                    <span class="cat-item-name">{{ $item['name'] }}</span>
+                                    @if($item['badge'])
+                                    <span class="cat-item-badge" style="{{ $item['badge_style'] }}">{{ $item['badge'] }}</span>
+                                    @endif
+                                </a>
+                                @empty
+                                <div style="grid-column: 1 / -1; padding: 20px; text-align: center; color: #888; font-size: 0.85rem;">
+                                    Đang cập nhật danh mục
+                                </div>
+                                @endforelse
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </li>
                     </div>
                 </div>
             </li>
