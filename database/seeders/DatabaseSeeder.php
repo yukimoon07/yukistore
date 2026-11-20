@@ -34,6 +34,7 @@ class DatabaseSeeder extends Seeder
             RandomCategoriesTableSeeder::class,
             GameServicesSeeder::class,
             LuckyWheelsTableSeeder::class,
+            CatalogImageSeeder::class,
         ]);
 
         $this->command?->info('Đã seed dữ liệu khung. Bước tiếp theo:');

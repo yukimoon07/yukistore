@@ -4,7 +4,7 @@
             <!-- Brand -->
             <div class="footer-brand">
                 <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">
-                    <img src="{{ config_get('site_logo_footer', config_get('site_logo')) }}" alt="{{ config_get('site_name') }}" width="120" height="32" style="height:32px; width:auto; object-fit:contain;" loading="lazy">
+                    <img src="{{ config_get('site_logo_footer', config_get('site_logo')) ?: '/img/logo.svg' }}" alt="{{ config_get('site_name', 'ShopGame') }}" width="120" height="32" style="height:32px; width:auto; object-fit:contain;" loading="lazy" onerror="this.src='/img/logo.svg'">
                 </div>
                 <p style="font-size:0.85rem;line-height:1.7;margin:0;color:#94a3b8;">
                     {{ config_get('site_description') }}
