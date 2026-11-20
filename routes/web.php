@@ -125,14 +125,10 @@ Route::prefix('tin-tuc')->name('news.')->group(function () {
     Route::get('/{slug}', [NewsController::class, 'show'])->name('show');
 });
 
-// Routes for Missions & Giftcode Earning (Làm nhiệm vụ kiếm tiền)
-Route::prefix('nhiem-vu')->name('missions.')->group(function () {
-    Route::get('/', [\App\Http\Controllers\User\MissionController::class, 'index'])->name('index');
-    Route::get('/chi-tiet/{id}', [\App\Http\Controllers\User\MissionController::class, 'show'])->name('show');
-    Route::get('/bat-dau/{id}', [\App\Http\Controllers\User\MissionController::class, 'start'])->name('start');
-    Route::get('/doi-ma', [\App\Http\Controllers\User\MissionController::class, 'giftcodeView'])->name('giftcode');
-    Route::post('/doi-ma', [\App\Http\Controllers\User\MissionController::class, 'redeemGiftcode'])->name('redeem');
-    Route::middleware('auth')->get('/lich-su', [\App\Http\Controllers\User\MissionController::class, 'history'])->name('history');
-});
+// Chức năng kiếm tiền đã tắt - chuyển hướng về trang chủ
+Route::any('/nhiem-vu/{any?}', function () {
+    return redirect('/');
+})->where('any', '.*');
+
 
 

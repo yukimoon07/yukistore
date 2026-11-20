@@ -17,7 +17,6 @@
                 <ul style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:10px;">
                     <li><a href="/" class="footer-link" style="color:#cbd5e1;text-decoration:none;font-size:0.85rem;transition:color .2s;">{{ __('shop.nav_home') }}</a></li>
                     <li><a href="{{ route('service.show-all') }}" class="footer-link" style="color:#cbd5e1;text-decoration:none;font-size:0.85rem;transition:color .2s;">{{ __('shop.nav_services') }}</a></li>
-                    <li><a href="{{ route('missions.index') }}" class="footer-link" style="color:#cbd5e1;text-decoration:none;font-size:0.85rem;transition:color .2s;">{{ __('shop.nav_missions') }}</a></li>
                     <li><a href="{{ route('profile.deposit-card') }}" class="footer-link" style="color:#cbd5e1;text-decoration:none;font-size:0.85rem;transition:color .2s;">{{ __('shop.nav_deposit') }}</a></li>
                     <li><a href="{{ route('profile.transaction-history') }}" class="footer-link" style="color:#cbd5e1;text-decoration:none;font-size:0.85rem;transition:color .2s;">{{ __('shop.nav_history') }}</a></li>
                     <li><a href="{{ route('news.index') }}" class="footer-link" style="color:#cbd5e1;text-decoration:none;font-size:0.85rem;transition:color .2s;">{{ __('shop.nav_news') }}</a></li>

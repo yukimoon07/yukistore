@@ -6,6 +6,15 @@ cd /var/www/html
 mkdir -p "$DATA_DIR" storage/framework/cache/data storage/framework/sessions storage/framework/views storage/logs bootstrap/cache 2>/dev/null || true
 chmod -R ug+rwX storage bootstrap/cache 2>/dev/null || true
 
+# Tang gioi han upload cho PHP (tranh loi treo hoac khong nhan anh lon)
+mkdir -p /usr/local/etc/php/conf.d 2>/dev/null || true
+cat > /usr/local/etc/php/conf.d/uploads.ini <<EOF
+upload_max_filesize = 64M
+post_max_size = 64M
+memory_limit = 256M
+max_execution_time = 120
+EOF
+
 # .env runtime (APP_KEY/APP_NAME/APP_URL/ADMIN_* nằm trong biến môi trường container)
 cat > .env <<ENVEOF
 APP_NAME=${APP_NAME:-ShopGame}

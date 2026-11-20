@@ -264,17 +264,6 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->name('admin.')->group(fun
         Route::delete('/delete/{news}', [App\Http\Controllers\Admin\NewsController::class, 'destroy'])->name('destroy');
     });
 
-    // Quản lý Nhiệm vụ kiếm tiền (Tích hợp từ Web làm nhiệm vụ)
-    Route::prefix('missions')->name('missions.')->group(function () {
-        Route::get('/', [\App\Http\Controllers\Admin\MissionController::class, 'index'])->name('index');
-        Route::get('/create', [\App\Http\Controllers\Admin\MissionController::class, 'create'])->name('create');
-        Route::post('/store', [\App\Http\Controllers\Admin\MissionController::class, 'store'])->name('store');
-        Route::get('/edit/{id}', [\App\Http\Controllers\Admin\MissionController::class, 'edit'])->name('edit');
-        Route::put('/update/{id}', [\App\Http\Controllers\Admin\MissionController::class, 'update'])->name('update');
-        Route::delete('/delete/{id}', [\App\Http\Controllers\Admin\MissionController::class, 'destroy'])->name('destroy');
-        Route::get('/histories', [\App\Http\Controllers\Admin\MissionController::class, 'histories'])->name('histories');
-    });
-
     // ===== Phân quyền (chỉ admin cấp cao) =====
     Route::middleware('super-admin')->prefix('roles')->name('roles.')->group(function () {
         Route::get('/', [\App\Http\Controllers\Admin\RoleController::class, 'index'])->name('index');

@@ -101,16 +101,6 @@
                         <i class="fas fa-cogs"></i> Dịch vụ Game
                     </a>
                 </li>
-                <li>
-                    <a href="{{ route('missions.index') }}" class="mobile-overlay-menu__link" style="color: var(--color-primary, #2563EB); font-weight: bold;">
-                        <i class="fas fa-fire"></i> Kiếm Tiền (Nhiệm Vụ)
-                    </a>
-                </li>
-                <li>
-                    <a href="{{ route('missions.giftcode') }}" class="mobile-overlay-menu__link">
-                        <i class="fas fa-gift"></i> Đổi Mã Giftcode
-                    </a>
-                </li>
             </ul>
         </div>
     </div>

@@ -124,19 +124,6 @@
                         <li class="pc-item"><a class="pc-link" href="{{ route('admin.withdrawals.resources.index') }}">Yêu cầu rút vật phẩm</a></li>
                     </ul>
                 </li>
-
-                <li class="pc-item pc-hasmenu {{ request()->is('admin/missions*') ? 'active pc-trigger' : '' }}">
-                    <a href="#" class="pc-link">
-                        <span class="pc-micon"><i class="ti ti-flame"></i></span>
-                        <span class="pc-mtext">Nhiệm vụ kiếm tiền</span>
-                        <span class="pc-arrow"><i data-feather="chevron-right"></i></span>
-                    </a>
-                    <ul class="pc-submenu" style="display: {{ request()->is('admin/missions*') ? 'block' : 'none' }};">
-                        <li class="pc-item"><a class="pc-link" href="{{ route('admin.missions.index') }}">Danh sách nhiệm vụ</a></li>
-                        <li class="pc-item"><a class="pc-link" href="{{ route('admin.missions.create') }}">Thêm nhiệm vụ mới</a></li>
-                        <li class="pc-item"><a class="pc-link" href="{{ route('admin.missions.histories') }}">Lịch sử làm nhiệm vụ</a></li>
-                    </ul>
-                </li>
                 
                 <li class="pc-item pc-caption"><label>Hệ thống</label></li>
 

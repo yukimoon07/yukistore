@@ -54,7 +54,7 @@ class RandomCategoryController extends Controller
     {
         $request->validate([
             'name' => 'required|string|unique:random_categories,name',
-            'thumbnail' => 'required|image|mimes:jpeg,png,jpg,gif',
+            'thumbnail' => 'required|image|mimes:jpeg,png,jpg,gif,webp',
             'tag_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
             'description' => 'nullable|string',
             'active' => 'boolean',
@@ -87,6 +87,10 @@ class RandomCategoryController extends Controller
 
             return redirect()->route('admin.random-categories.index')
                 ->with('success', 'Danh mục random đã được thêm thành công!');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return redirect()->back()
+                ->withErrors($e->errors())
+                ->withInput();
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Error creating random category: ' . $e->getMessage());
@@ -101,7 +105,7 @@ class RandomCategoryController extends Controller
      */
     public function edit(RandomCategory $category)
     {
-        $title = 'Chỉnh sửa danh mục random';
+        $title = "Chỉnh sửa danh mục random";
         $gameGroups = \App\Models\GameGroup::where('active', true)->get();
         return view('admin.random-categories.edit', compact('title', 'category', 'gameGroups'));
     }
@@ -113,7 +117,7 @@ class RandomCategoryController extends Controller
     {
         $request->validate([
             'name' => 'required|string|unique:random_categories,name,' . $category->id,
-            'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif',
+            'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp',
             'tag_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
             'description' => 'nullable|string',
             'active' => 'boolean',
@@ -158,6 +162,10 @@ class RandomCategoryController extends Controller
 
             return redirect()->route('admin.random-categories.index')
                 ->with('success', 'Danh mục random đã được cập nhật thành công!');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return redirect()->back()
+                ->withErrors($e->errors())
+                ->withInput();
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Error updating random category: ' . $e->getMessage());
@@ -173,24 +181,7 @@ class RandomCategoryController extends Controller
     public function destroy(RandomCategory $category)
     {
         try {
-            DB::beginTransaction();
-
-            // Kiểm tra xem có tài khoản nào thuộc danh mục này không
-            if ($category->accounts()->count() > 0) {
-                DB::rollBack();
-
-                if (request()->ajax()) {
-                    return response()->json([
-                        'success' => false,
-                        'message' => 'Không thể xóa danh mục này vì có tài khoản thuộc danh mục!'
-                    ], 400);
-                }
-
-                return redirect()->route('admin.random-categories.index')
-                    ->with('error', 'Không thể xóa danh mục này vì có tài khoản thuộc danh mục!');
-            }
-
-            // Delete thumbnail if exists
+            // Delete images
             if ($category->thumbnail) {
                 UploadHelper::deleteByUrl($category->thumbnail);
             }
@@ -201,30 +192,43 @@ class RandomCategoryController extends Controller
 
             $category->delete();
 
-            DB::commit();
-
-            if (request()->ajax()) {
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Danh mục random đã được xóa thành công!'
-                ]);
-            }
-
             return redirect()->route('admin.random-categories.index')
                 ->with('success', 'Danh mục random đã được xóa thành công!');
         } catch (\Exception $e) {
-            DB::rollBack();
             Log::error('Error deleting random category: ' . $e->getMessage());
+            return redirect()->back()
+                ->with('error', 'Đã xảy ra lỗi khi xóa danh mục: ' . $e->getMessage());
+        }
+    }
 
-            if (request()->ajax()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Không thể xóa danh mục random. Lỗi: ' . $e->getMessage()
-                ], 500);
-            }
+    /**
+     * Lấy danh sách tài khoản theo danh mục
+     */
+    public function getAccounts(RandomCategory $category)
+    {
+        $accounts = $category->accounts()->paginate(10);
+        return view('admin.random-categories.accounts', compact('category', 'accounts'));
+    }
 
-            return redirect()->route('admin.random-categories.index')
-                ->with('error', 'Không thể xóa danh mục random. Lỗi: ' . $e->getMessage());
+    /**
+     * Cập nhật trạng thái hiển thị
+     */
+    public function toggleStatus(Request $request, RandomCategory $category)
+    {
+        try {
+            $category->update([
+                'active' => $request->active
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Cập nhật trạng thái thành công!'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Đã xảy ra lỗi: ' . $e->getMessage()
+            ], 500);
         }
     }
 }

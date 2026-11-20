@@ -952,10 +952,6 @@
             <li><a href="{{ route('profile.affiliate') }}" class="nav-link-item"><span class="iconify"
                         data-icon="ant-design:link-outlined"></span> {{ __('shop.nav_affiliate') }}</a></li>
 
-            <!-- Missions / Kiếm Tiền (Harmonized Color + HOT Badge) -->
-            <li><a href="{{ route('missions.index') }}" class="nav-link-item {{ request()->routeIs('missions.*') ? 'active' : '' }}"><span class="iconify"
-                        data-icon="ant-design:fire-filled" style="color:#C2922A;"></span> {{ __('shop.nav_missions') }} <span style="font-size: 10px; background: linear-gradient(135deg, #E8B33C, #C2922A); color: #fff; padding: 2px 6px; border-radius: 8px; margin-left: 2px; font-weight: 800;">HOT</span></a></li>
-
             @if(Auth::check() && Auth::user()->role === 'admin')
             <li class="mobile-only-admin">
                 <a href="{{ route('admin.index') }}" target="_blank" class="nav-link-item" style="color: #fbbf24 !important; font-weight: 700;">
