@@ -9,6 +9,7 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class RandomCategoryController extends Controller
 {
@@ -72,6 +73,10 @@ class RandomCategoryController extends Controller
             $data = $request->all();
             $data['slug'] = Str::slug($request->name);
             $data['is_flash_sale'] = $request->has('is_flash_sale');
+
+            if (!Schema::hasColumn('random_categories', 'game_group_id')) {
+                unset($data['game_group_id']);
+            }
 
             if ($request->hasFile('thumbnail')) {
                 $data['thumbnail'] = UploadHelper::upload($request->file('thumbnail'), self::UPLOAD_DIR);
@@ -138,6 +143,10 @@ class RandomCategoryController extends Controller
             }
             $data['slug'] = Str::slug($request->name);
             $data['is_flash_sale'] = $request->has('is_flash_sale');
+
+            if (!Schema::hasColumn('random_categories', 'game_group_id')) {
+                unset($data['game_group_id']);
+            }
 
             if ($request->hasFile('thumbnail')) {
                 // Delete old thumbnail if exists

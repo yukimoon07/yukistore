@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 
 class GameCategoryController extends Controller
 {
@@ -35,7 +36,7 @@ class GameCategoryController extends Controller
 
     public function create()
     {
-        $title = "Thêm danh mục game mới";
+        $title = 'Thêm danh mục game mới';
         $gameGroups = \App\Models\GameGroup::where('active', true)->get();
         return view('admin.categories.create', compact('title', 'gameGroups'));
     }
@@ -45,7 +46,7 @@ class GameCategoryController extends Controller
         try {
             $request->validate([
                 'name' => 'required|string|unique:game_categories,name',
-                'thumbnail' => 'required|image|mimes:jpeg,png,jpg,gif',
+                'thumbnail' => 'required|image|mimes:jpeg,png,jpg,gif,webp',
                 'tag_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
                 'description' => 'required|string',
                 'active' => 'boolean',
@@ -63,6 +64,10 @@ class GameCategoryController extends Controller
             $data['slug'] = Str::slug($request->name);
             $data['active'] = $request->boolean('active');
             $data['is_flash_sale'] = $request->has('is_flash_sale');
+
+            if (!Schema::hasColumn('game_categories', 'game_group_id')) {
+                unset($data['game_group_id']);
+            }
 
             if ($request->hasFile('thumbnail')) {
                 $data['thumbnail'] = UploadHelper::upload($request->file('thumbnail'), self::UPLOAD_DIR);
@@ -101,12 +106,11 @@ class GameCategoryController extends Controller
     public function update(Request $request, GameCategory $category)
     {
         try {
-            // Validate request data
             $request->validate([
                 'name' => 'required|string|unique:game_categories,name,' . $category->id,
-                'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif',
+                'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp',
                 'tag_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
-                'description' => 'nullable|string',
+                'description' => 'required|string',
                 'active' => 'boolean',
                 'platform' => 'nullable|string|max:255',
                 'game_group_id' => 'nullable|exists:game_groups,id',
@@ -123,36 +127,32 @@ class GameCategoryController extends Controller
             $data['active'] = $request->boolean('active');
             $data['is_flash_sale'] = $request->has('is_flash_sale');
 
+            if (!Schema::hasColumn('game_categories', 'game_group_id')) {
+                unset($data['game_group_id']);
+            }
+
             if ($request->hasFile('thumbnail')) {
-                // Delete old thumbnail if exists
                 if ($category->thumbnail) {
                     UploadHelper::deleteByUrl($category->thumbnail);
                 }
 
-                // Upload new thumbnail
                 $data['thumbnail'] = UploadHelper::upload($request->file('thumbnail'), self::UPLOAD_DIR);
             }
 
             if ($request->hasFile('tag_image')) {
-                // Delete old tag_image if exists
                 if ($category->tag_image) {
                     UploadHelper::deleteByUrl($category->tag_image);
                 }
 
-                // Upload new tag_image
                 $data['tag_image'] = UploadHelper::upload($request->file('tag_image'), self::UPLOAD_DIR);
             }
 
-            // Update category
-            if (!$category->update($data)) {
-                throw new \Exception('Không thể cập nhật danh mục');
-            }
+            $category->update($data);
 
             DB::commit();
 
             return redirect()->route('admin.categories.index')
-                ->with('success', 'Cập nhật danh mục thành công!');
-
+                ->with('success', 'Danh mục game đã được cập nhật thành công!');
         } catch (\Illuminate\Validation\ValidationException $e) {
             return redirect()->back()
                 ->withErrors($e->errors())
@@ -171,7 +171,6 @@ class GameCategoryController extends Controller
         try {
             DB::beginTransaction();
 
-            // Delete thumbnail if exists
             if ($category->thumbnail) {
                 UploadHelper::deleteByUrl($category->thumbnail);
             }
@@ -184,17 +183,13 @@ class GameCategoryController extends Controller
 
             DB::commit();
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Xóa danh mục thành công!'
-            ]);
+            return redirect()->route('admin.categories.index')
+                ->with('success', 'Danh mục game đã được xóa thành công!');
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Error deleting game category: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => 'Có lỗi xảy ra khi xóa danh mục: ' . $e->getMessage()
-            ], 500);
+            return redirect()->back()
+                ->with('error', 'Có lỗi xảy ra: ' . $e->getMessage());
         }
     }
 }
