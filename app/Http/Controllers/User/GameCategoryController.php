@@ -154,10 +154,21 @@ class GameCategoryController extends Controller
 
     public function showGroup($slug)
     {
-        $gameGroup = \App\Models\GameGroup::where('slug', $slug)->firstOrFail();
+        $gameGroup = \App\Models\GameGroup::where('slug', $slug)->first();
+        if (!$gameGroup) {
+            $gameGroup = \App\Models\GameGroup::all()->first(function($g) use ($slug) {
+                return \Illuminate\Support\Str::slug($g->name) === $slug;
+            });
+        }
+        if (!$gameGroup) {
+            abort(404);
+        }
         $title = $gameGroup->name;
         
-        $categories = Category::where('game_group_id', $gameGroup->id)->where('active', true)->get();
+        $categories = Category::where(function($q) use ($gameGroup) {
+            $q->where('game_group_id', $gameGroup->id)
+              ->orWhere('platform', $gameGroup->name);
+        })->where('active', true)->get();
 
         foreach ($categories as $category) {
             $category->allAccount = GameAccount::where('game_category_id', $category->id)->where('status', 'available')->count();
@@ -168,7 +179,10 @@ class GameCategoryController extends Controller
             $category->url = route('category.index', ['slug' => $category->slug]);
         }
 
-        $randomCategories = RandomCategory::where('game_group_id', $gameGroup->id)->where('active', true)->get();
+        $randomCategories = RandomCategory::where(function($q) use ($gameGroup) {
+            $q->where('game_group_id', $gameGroup->id)
+              ->orWhere('platform', $gameGroup->name);
+        })->where('active', true)->get();
         foreach ($randomCategories as $category) {
             $category->soldCount = RandomCategoryAccount::where('random_category_id', $category->id)->where('status', 'sold')->count();
             $category->allAccount = RandomCategoryAccount::where('random_category_id', $category->id)->where('status', 'available')->count();

@@ -54,12 +54,15 @@ if [ "$NEED_SEED" = "1" ]; then
 fi
 
 # Luôn cập nhật danh mục & ảnh catalog (idempotent updateOrCreate theo slug)
-php artisan db:seed --class=Database\\Seeders\\CatalogImageSeeder --force || echo 'warning: seed catalog that bai'
+php artisan db:seed --class=CatalogImageSeeder --force || php artisan db:seed --class=Database\\Seeders\\CatalogImageSeeder --force || echo 'warning: seed catalog that bai'
 
 if [ -L public/storage ] && [ ! -d public/storage ]; then
   rm -f public/storage
 fi
 php artisan storage:link >/dev/null 2>&1 || true
+php artisan config:clear >/dev/null 2>&1 || true
+php artisan route:clear >/dev/null 2>&1 || true
+php artisan view:clear >/dev/null 2>&1 || true
 php artisan config:cache >/dev/null
 php artisan route:cache >/dev/null 2>&1 || true
 php artisan view:cache >/dev/null 2>&1 || true

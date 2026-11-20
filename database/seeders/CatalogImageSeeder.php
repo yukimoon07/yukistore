@@ -2,15 +2,19 @@
 
 namespace Database\Seeders;
 
+use App\Models\Category;
 use App\Models\GameCategory;
 use App\Models\GameGroup;
+use App\Models\GameService;
 use App\Models\RandomCategory;
+use App\Models\ServicePackage;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 
 /**
  * Idempotent: updateOrCreate theo slug. Chạy lại nhiều lần không tạo bản ghi trùng.
- * Tạo danh mục game, nhóm game và danh mục random từ bộ ảnh trong 'shop img'.
+ * Tạo danh mục game, nhóm game, danh mục random và dịch vụ từ bộ ảnh trong 'shop img'.
  *
  * Chạy: php artisan db:seed --class=CatalogImageSeeder
  */
@@ -22,7 +26,7 @@ class CatalogImageSeeder extends Seeder
     {
         $now = now();
 
-        // ---- Game groups (Nhóm game theo nền tảng) ----
+        // 1. ---- Game groups (Nhóm game theo nền tảng) ----
         $groups = [
             ['name' => 'Liên Quân Mobile',   'slug' => 'lien-quan-mobile',   'thumbnail' => self::IMG . '/thu-van-may-lien-quan-200k.png', 'order' => 1, 'active' => true],
             ['name' => 'FC Mobile',           'slug' => 'fc-mobile',           'thumbnail' => self::IMG . '/acc-tu-chon-fc-mobile.png',      'order' => 2, 'active' => true],
@@ -33,15 +37,31 @@ class CatalogImageSeeder extends Seeder
             ['name' => 'Blox Fruits',         'slug' => 'blox-fruits',         'thumbnail' => self::IMG . '/blox-fruits.png',                'order' => 7, 'active' => true],
         ];
 
-        foreach ($groups as $g) {
-            GameGroup::updateOrCreate(
-                ['slug' => $g['slug']],
-                $g + ['created_at' => $now, 'updated_at' => $now]
-            );
-        }
-        $gid = fn (string $slug) => optional(GameGroup::where('slug', $slug)->first())->id;
+        try {
+            foreach ($groups as $g) {
+                $payload = ['updated_at' => $now];
+                if (Schema::hasColumn('game_groups', 'name')) $payload['name'] = $g['name'];
+                if (Schema::hasColumn('game_groups', 'thumbnail')) $payload['thumbnail'] = $g['thumbnail'];
+                if (Schema::hasColumn('game_groups', 'order')) $payload['order'] = $g['order'];
+                if (Schema::hasColumn('game_groups', 'active')) $payload['active'] = $g['active'];
 
-        // ---- Danh mục nick chọn lọc (game_categories) từ ảnh shop img ----
+                if (Schema::hasColumn('game_groups', 'slug')) {
+                    GameGroup::updateOrCreate(['slug' => $g['slug']], $payload + ['created_at' => $now]);
+                } else {
+                    GameGroup::create($payload + ['created_at' => $now]);
+                }
+            }
+        } catch (\Throwable $e) {
+            Log::error('CatalogImageSeeder - GameGroup Error: ' . $e->getMessage());
+            $this->command?->error('GameGroup seed error: ' . $e->getMessage());
+        }
+
+        $gid = function (string $slug) {
+            if (!Schema::hasColumn('game_groups', 'slug')) return null;
+            return optional(GameGroup::where('slug', $slug)->first())->id;
+        };
+
+        // 2. ---- Danh mục nick chọn lọc (game_categories) từ ảnh shop img ----
         $gameCategories = [
             [
                 'name' => 'Acc Tự Chọn FC Mobile',
@@ -126,22 +146,31 @@ class CatalogImageSeeder extends Seeder
         ];
 
         $hasGameGroupColGameCat = Schema::hasColumn('game_categories', 'game_group_id');
-        foreach ($gameCategories as $c) {
-            $payload = [
-                'name' => $c['name'],
-                'platform' => $c['platform'],
-                'thumbnail' => $c['thumbnail'],
-                'description' => $c['description'],
-                'active' => true,
-                'updated_at' => $now,
-            ];
-            if ($hasGameGroupColGameCat) {
-                $payload['game_group_id'] = $gid($c['game_group']);
+        $hasPlatformColGameCat = Schema::hasColumn('game_categories', 'platform');
+
+        try {
+            foreach ($gameCategories as $c) {
+                $payload = [
+                    'name' => $c['name'],
+                    'thumbnail' => $c['thumbnail'],
+                    'description' => $c['description'],
+                    'active' => true,
+                    'updated_at' => $now,
+                ];
+                if ($hasPlatformColGameCat) {
+                    $payload['platform'] = $c['platform'];
+                }
+                if ($hasGameGroupColGameCat) {
+                    $payload['game_group_id'] = $gid($c['game_group']);
+                }
+                GameCategory::updateOrCreate(['slug' => $c['slug']], $payload + ['created_at' => $now]);
             }
-            GameCategory::updateOrCreate(['slug' => $c['slug']], $payload + ['created_at' => $now]);
+        } catch (\Throwable $e) {
+            Log::error('CatalogImageSeeder - GameCategory Error: ' . $e->getMessage());
+            $this->command?->error('GameCategory seed error: ' . $e->getMessage());
         }
 
-        // ---- Danh mục random / túi mù (random_categories) từ ảnh shop img ----
+        // 3. ---- Danh mục random / túi mù (random_categories) từ ảnh shop img ----
         $randomCategories = [
             [
                 'name' => 'Thử Vận May Liên Quân 200K',
@@ -197,30 +226,123 @@ class CatalogImageSeeder extends Seeder
                 'game_group' => 'lien-quan-mobile',
                 'price' => 99000,
             ],
+            [
+                'name' => 'Thử Vận May Blox Fruits',
+                'slug' => 'thu-van-may-blox-fruits',
+                'platform' => 'Roblox',
+                'thumbnail' => self::IMG . '/blox-fruits-dragon.png',
+                'description' => 'Thử vận may Blox Fruits ngẫu nhiên, cơ hội nhận tài khoản VIP có Melee V2, Trái Ác Quỷ vĩnh viễn.',
+                'game_group' => 'blox-fruits',
+                'price' => 50000,
+            ],
         ];
 
         $hasGameGroupColRandCat = Schema::hasColumn('random_categories', 'game_group_id');
+        $hasPlatformColRandCat = Schema::hasColumn('random_categories', 'platform');
         $hasTagImageCol = Schema::hasColumn('random_categories', 'tag_image');
+        $hasPriceCol = Schema::hasColumn('random_categories', 'price');
 
-        foreach ($randomCategories as $c) {
-            $payload = [
-                'name' => $c['name'],
-                'platform' => $c['platform'],
-                'thumbnail' => $c['thumbnail'],
-                'description' => $c['description'],
-                'active' => true,
-                'price' => $c['price'],
-                'updated_at' => $now,
-            ];
-            if ($hasGameGroupColRandCat) {
-                $payload['game_group_id'] = $gid($c['game_group']);
+        try {
+            foreach ($randomCategories as $c) {
+                $payload = [
+                    'name' => $c['name'],
+                    'thumbnail' => $c['thumbnail'],
+                    'description' => $c['description'],
+                    'active' => true,
+                    'updated_at' => $now,
+                ];
+                if ($hasPlatformColRandCat) {
+                    $payload['platform'] = $c['platform'];
+                }
+                if ($hasPriceCol) {
+                    $payload['price'] = $c['price'];
+                }
+                if ($hasGameGroupColRandCat) {
+                    $payload['game_group_id'] = $gid($c['game_group']);
+                }
+                if ($hasTagImageCol) {
+                    $payload['tag_image'] = null;
+                }
+                RandomCategory::updateOrCreate(['slug' => $c['slug']], $payload + ['created_at' => $now]);
             }
-            if ($hasTagImageCol) {
-                $payload['tag_image'] = null;
-            }
-            RandomCategory::updateOrCreate(['slug' => $c['slug']], $payload + ['created_at' => $now]);
+        } catch (\Throwable $e) {
+            Log::error('CatalogImageSeeder - RandomCategory Error: ' . $e->getMessage());
+            $this->command?->error('RandomCategory seed error: ' . $e->getMessage());
         }
 
-        $this->command?->info('CatalogImageSeeder: đã tạo ' . count($groups) . ' nhóm game, ' . count($gameCategories) . ' danh mục nick, ' . count($randomCategories) . ' danh mục random từ shop img.');
+        // 4. ---- Dịch vụ cày thuê mặc định (game_services) nếu bảng đang trống ----
+        try {
+            if (Schema::hasTable('game_services') && GameService::count() === 0) {
+                $defaultServices = [
+                    [
+                        'name' => 'Cày Thuê Liên Quân Mobile',
+                        'slug' => 'cay-thue-lien-quan-mobile',
+                        'thumbnail' => self::IMG . '/thu-van-may-lien-quan-200k.png',
+                        'description' => 'Dịch vụ cày thuê rank Liên Quân Mobile uy tín, nhanh chóng, bảo mật tài khoản 100%.',
+                        'type' => 'leveling',
+                        'active' => true,
+                        'packages' => [
+                            ['name' => 'Kéo rank Kim Cương lên Tinh Anh', 'price' => 50000, 'estimated_time' => 24, 'description' => 'Kéo theo sao an toàn.'],
+                            ['name' => 'Kéo rank Tinh Anh lên Cao Thủ', 'price' => 100000, 'estimated_time' => 48, 'description' => 'Kéo rank thần tốc.'],
+                        ]
+                    ],
+                    [
+                        'name' => 'Cày Thuê Blox Fruits',
+                        'slug' => 'cay-thue-blox-fruits',
+                        'thumbnail' => self::IMG . '/blox-fruits.png',
+                        'description' => 'Dịch vụ cày cấp độ, săn Melee V2, thức tỉnh Trái Ác Quỷ uy tín giá rẻ.',
+                        'type' => 'leveling',
+                        'active' => true,
+                        'packages' => [
+                            ['name' => 'Cày Max Level (2550)', 'price' => 60000, 'estimated_time' => 24, 'description' => 'Cày từ Sea 1 đến Sea 3.'],
+                            ['name' => 'Săn Godhuman / Cursed Dual Katana', 'price' => 120000, 'estimated_time' => 48, 'description' => 'Đầy đủ nguyên liệu.'],
+                        ]
+                    ],
+                    [
+                        'name' => 'Cày Thuê Genshin Impact',
+                        'slug' => 'cay-thue-genshin-impact',
+                        'thumbnail' => self::IMG . '/acc-genshin-impact.png',
+                        'description' => 'Dịch vụ dọn map 100%, làm nhiệm vụ Ma Thần, farm thánh di vật.',
+                        'type' => 'leveling',
+                        'active' => true,
+                        'packages' => [
+                            ['name' => 'Dọn Map 100% (Mondstadt / Liyue / Inazuma)', 'price' => 70000, 'estimated_time' => 36, 'description' => 'Mở full rương và phong thần đồng.'],
+                        ]
+                    ],
+                ];
+
+                foreach ($defaultServices as $ds) {
+                    $svc = GameService::create([
+                        'name' => $ds['name'],
+                        'slug' => $ds['slug'],
+                        'thumbnail' => $ds['thumbnail'],
+                        'description' => $ds['description'],
+                        'type' => $ds['type'],
+                        'active' => $ds['active'],
+                        'created_at' => $now,
+                        'updated_at' => $now,
+                    ]);
+
+                    if (Schema::hasTable('service_packages')) {
+                        foreach ($ds['packages'] as $pkg) {
+                            ServicePackage::create([
+                                'game_service_id' => $svc->id,
+                                'name' => $pkg['name'],
+                                'price' => $pkg['price'],
+                                'estimated_time' => $pkg['estimated_time'],
+                                'description' => $pkg['description'],
+                                'active' => true,
+                                'created_at' => $now,
+                                'updated_at' => $now,
+                            ]);
+                        }
+                    }
+                }
+            }
+        } catch (\Throwable $e) {
+            Log::error('CatalogImageSeeder - GameService Error: ' . $e->getMessage());
+        }
+
+        $this->command?->info('CatalogImageSeeder: đã tạo/cập nhật đầy đủ nhóm game, danh mục nick, danh mục random và dịch vụ!');
     }
 }

@@ -13,6 +13,7 @@ class RandomCategory extends Model
         'thumbnail',
         'tag_image',
         'description',
+        'price',
         'active',
         'platform',
         'game_group_id',
