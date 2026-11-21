@@ -186,7 +186,7 @@
                                                     <div class="step-num">2</div>
                                                     <div class="step-content">
                                                         <h4>Chuyển khoản</h4>
-                                                        <p>Quét QR hoặc chuyển đúng số tiền và nội dung CK. Nội dung phải bắt đầu bằng <strong>{{ config('sepay.prefix', 'NAP') }}{{ Auth::id() }}</strong>.</p>
+                                                        <p>Quét QR hoặc chuyển đúng số tiền và nội dung CK. Nội dung phải bắt đầu bằng <strong>{{ config('sepay.prefix', 'Yuki') }}{{ str_pad(Auth::id(), 3, '0', STR_PAD_LEFT) }}</strong>.</p>
                                                     </div>
                                                 </div>
                                                 <div class="step-item">
@@ -436,8 +436,10 @@
 
                 btnSubmit.addEventListener('click', function() {
                     const amount = inputAmount.value;
-                    const basePrefix = (selectedBank.prefix || '{{ config('sepay.prefix', 'NAP') }}').trim().replace(/\d+$/, '');
-                    const content = (basePrefix || 'NAP') + userId;
+                    const basePrefix = (selectedBank.prefix || '{{ config('sepay.prefix', 'Yuki') }}').trim().replace(/\d+$/, '') || 'Yuki';
+                    // Pad ID to at least 3 digits to match SePay pattern (e.g. Yuki001)
+                    const formattedId = String(userId).padStart(3, '0');
+                    const content = basePrefix + formattedId;
                     
                     document.getElementById('qr-bank').textContent = selectedBank.bank;
                     document.getElementById('qr-name').textContent = selectedBank.name;

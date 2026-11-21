@@ -125,6 +125,47 @@ class SePayWebhookTest extends TestCase
         $this->assertEquals(50000, $user->balance);
     }
 
+    public function test_accepts_sepay_pattern_yuki001_with_code(): void
+    {
+        $user = User::create([
+            'username' => 'yuki_code_user_' . uniqid(),
+            'email' => 'yukicode_' . uniqid() . '@example.com',
+            'password' => bcrypt('password'),
+            'balance' => 0,
+            'total_deposited' => 0,
+        ]);
+
+        $paddedId = str_pad((string)$user->id, 3, '0', STR_PAD_LEFT);
+        $body = json_encode([
+            'id' => 'TX_YUKI_CODE_' . time(),
+            'transferAmount' => 100000,
+            'code' => 'Yuki' . $paddedId,
+            'content' => 'Yuki' . $paddedId . ' chuyen khoan naptien',
+            'transferType' => 'in',
+            'gateway' => 'MBBank',
+        ]);
+        $timestamp = (string) time();
+        $signature = 'sha256=' . hash_hmac('sha256', $timestamp . '.' . $body, $this->secret);
+
+        $response = $this->call(
+            'POST',
+            '/api/webhooks/sepay',
+            [],
+            [],
+            [],
+            [
+                'HTTP_X_SEPAY_SIGNATURE' => $signature,
+                'HTTP_X_SEPAY_TIMESTAMP' => $timestamp,
+                'CONTENT_TYPE' => 'application/json',
+            ],
+            $body
+        );
+
+        $response->assertStatus(200);
+        $user->refresh();
+        $this->assertEquals(100000, $user->balance);
+    }
+
     public function test_acknowledges_sepay_test_ping(): void
     {
         $body = json_encode([

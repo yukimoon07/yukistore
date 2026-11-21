@@ -311,10 +311,30 @@ class SePayWebhookController extends Controller
 
     private function extractUserId(string $content, array $payload): int
     {
-        $prefix = (string) config('sepay.prefix', 'NAP');
+        $prefix = (string) config('sepay.prefix', 'Yuki');
+
+        // 1. Direct check on SePay recognized 'code' field (e.g. "Yuki001")
+        if (!empty($payload['code'])) {
+            $codeStr = trim((string) $payload['code']);
+            $codeUserId = get_id_bank($prefix, $codeStr);
+            if ($codeUserId <= 0) {
+                $codeUserId = get_id_bank('Yuki', $codeStr);
+            }
+            if ($codeUserId <= 0 && preg_match('/\d+/', $codeStr, $m)) {
+                $candidate = (int) $m[0];
+                if ($candidate > 0 && User::whereKey($candidate)->exists()) {
+                    $codeUserId = $candidate;
+                }
+            }
+            if ($codeUserId > 0) {
+                return $codeUserId;
+            }
+        }
+
+        // 2. Check content with configured prefix
         $userId = get_id_bank($prefix, $content);
 
-        // Check configured prefixes from active bank accounts (e.g. 'yuki')
+        // 3. Check configured prefixes from active bank accounts (e.g. 'yuki')
         if ($userId <= 0) {
             try {
                 $dbPrefixes = BankAccount::whereNotNull('prefix')
@@ -330,22 +350,9 @@ class SePayWebhookController extends Controller
             } catch (\Throwable $e) {}
         }
 
-        // Fallback to parsed payment code from SePay payload if available
-        if ($userId <= 0 && !empty($payload['code'])) {
-            $userId = get_id_bank($prefix, (string) $payload['code']);
-            if ($userId <= 0 && isset($dbPrefixes)) {
-                foreach ($dbPrefixes as $p) {
-                    $userId = get_id_bank($p, (string) $payload['code']);
-                    if ($userId > 0) {
-                        return $userId;
-                    }
-                }
-            }
-        }
-
-        // Check common prefixes: 'yuki', 'NAP', 'naptien', 'nap'
+        // 4. Check common prefixes: 'Yuki', 'yuki', 'NAP', 'naptien', 'nap'
         if ($userId <= 0) {
-            foreach (['yuki', 'NAP', 'naptien', 'nap'] as $commonPrefix) {
+            foreach (['Yuki', 'yuki', 'NAP', 'naptien', 'nap'] as $commonPrefix) {
                 $userId = get_id_bank($commonPrefix, $content);
                 if ($userId > 0) {
                     return $userId;
@@ -353,7 +360,7 @@ class SePayWebhookController extends Controller
             }
         }
 
-        // Regex fallback: find any word prefix directly followed by digits (e.g. 'yuki1', 'nap12')
+        // 5. Regex fallback: find any word prefix directly followed by digits (e.g. 'Yuki001', 'yuki1', 'nap12')
         if ($userId <= 0) {
             if (preg_match('/[a-zA-Z]+(\d+)/', $content, $matches)) {
                 $candidateId = (int) $matches[1];
