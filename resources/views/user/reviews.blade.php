@@ -11,6 +11,20 @@
         </h2>
     </div>
 
+    <!-- Interactive Experience Rating Card (Prompt #016) -->
+    <div class="user-experience-rating-card" style="margin: 0 auto 36px; max-width: 460px; padding: 24px; border-radius: 20px; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: 0 16px 36px rgba(0, 0, 0, 0.25); text-align: center;">
+        <x-star-rating-u016 
+            id="reviewsCustomerRating"
+            question="Bạn cảm thấy thế nào về trải nghiệm tại cửa hàng?"
+            :words="['Chạm vào sao để đánh giá', 'Rất tệ', 'Tạm được', 'Hài lòng', 'Tuyệt vời', 'Xuất sắc']"
+            :colors="['var(--ux-ink-3)', '#E5484D', '#F07A3E', '#E8A317', '#2FB37A', 'var(--yuki-gold, #E8B33C)']"
+            inputName="customer_experience_rating"
+        />
+        <div id="ratingSuccessNotice" style="display: none; margin-top: 12px; font-size: 0.9rem; color: #10b981; font-weight: 700;">
+            <i class="fa-solid fa-circle-check"></i> Cảm ơn bạn đã gửi đánh giá! Trải nghiệm của bạn giúp shop ngày càng hoàn thiện.
+        </div>
+    </div>
+
     <div style="margin-bottom: 15px; font-weight: 600; color: #4b5563;">
         @if(isset($purchases) && $purchases->total() > 0)
             Có {{ $purchases->total() }} lượt mua được xác thực
@@ -172,4 +186,14 @@
         color: #ef4444;
     }
 </style>
+<script>
+    document.addEventListener('u016:rate', function(e) {
+        if (e.target && e.target.id === 'reviewsCustomerRating') {
+            var notice = document.getElementById('ratingSuccessNotice');
+            if (notice) {
+                notice.style.display = 'block';
+            }
+        }
+    });
+</script>
 @endsection

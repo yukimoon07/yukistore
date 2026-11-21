@@ -130,6 +130,11 @@ Route::get('/order-summary', function () {
     return view('user.order-summary-preview');
 })->name('order-summary.preview');
 
+// Star rating preview (Prompt #016)
+Route::get('/star-rating', function () {
+    return view('user.star-rating-preview');
+})->name('star-rating.preview');
+
 // Chức năng kiếm tiền đã tắt - chuyển hướng về trang chủ
 Route::any('/nhiem-vu/{any?}', function () {
     return redirect('/');
