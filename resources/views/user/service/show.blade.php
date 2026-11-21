@@ -282,23 +282,8 @@
                             <div class="form-hint-gaming">Nên dùng mã dự phòng (backup codes) nếu có.</div>
                         </div>
 
-                        <!-- Giftcode / Discount Code -->
-                        <div class="form-group-gaming">
-                            <label for="giftcode" class="form-label-gaming">
-                                <i class="fa-solid fa-ticket"></i> Mã giảm giá (Nếu có)
-                            </label>
-                            <div style="display: flex; gap: 8px;">
-                                <input type="text" id="giftcode" name="giftcode" class="form-control-gaming" 
-                                       placeholder="Nhập mã ưu đãi" value="{{ old('giftcode') }}">
-                                <button type="button" class="btn-card-action" id="btnApplyGiftcode" style="width: auto; padding: 0 16px; cursor: pointer;">
-                                    Áp dụng
-                                </button>
-                            </div>
-                            <div id="giftcodeFeedback" style="font-size: 0.8rem; margin-top: 5px; display: none;"></div>
-                        </div>
-
                         <!-- Note for Booster -->
-                        <div class="form-group-gaming">
+                        <div class="form-group-gaming" style="margin-bottom: 16px;">
                             <label for="note" class="form-label-gaming">
                                 <i class="fa-solid fa-message"></i> Ghi chú cho kỹ thuật viên
                             </label>
@@ -306,40 +291,34 @@
                                       placeholder="Yêu cầu riêng hoặc lưu ý thêm...">{{ old('note') }}</textarea>
                         </div>
 
-                        <!-- Price Breakdown -->
-                        <div class="checkout-price-summary">
-                            <div class="price-summary-row">
-                                <span>Giá dịch vụ:</span>
-                                <span id="summaryOriginalPrice">0 đ</span>
-                            </div>
-                            <div class="price-summary-row" id="rowDiscount" style="display: none; color: var(--accent-emerald);">
-                                <span>Giảm giá:</span>
-                                <span id="summaryDiscountAmount">-0 đ</span>
-                            </div>
-                            <div class="price-summary-row total">
-                                <span>Tổng thanh toán:</span>
-                                <span class="price-summary-total" id="summaryFinalPrice">0 đ</span>
-                            </div>
-                        </div>
-
                         <!-- User Balance Info -->
                         @if(Auth::check())
-                            <div class="user-balance-bar">
+                            <div class="user-balance-bar" style="margin-bottom: 16px;">
                                 <span>Số dư tài khoản:</span>
                                 <span class="user-balance-amount">{{ number_format(Auth::user()->balance) }} đ</span>
                             </div>
                         @endif
 
-                        <!-- Submit Button -->
-                        @if(Auth::check())
-                            <button type="submit" class="btn-checkout-submit" id="btnSubmitOrder">
-                                <i class="fa-solid fa-bolt"></i> {{ __('shop.service_order_btn') }}
-                            </button>
-                        @else
-                            <a href="{{ route('login') }}" class="btn-checkout-submit" style="text-decoration: none;">
-                                <i class="fa-solid fa-right-to-bracket"></i> {{ __('shop.nav_login') }}
-                            </a>
-                        @endif
+                        <!-- Order Summary with Promo Code Recalculation (Prompt #230) -->
+                        <div class="checkout-u230-container" style="margin-top: 12px;">
+                            <x-order-summary-u230 
+                                id="serviceCheckoutSummary"
+                                title="Đơn dịch vụ"
+                                :items="[
+                                    [$service->name, 'Gói: ' . ($validPackages->first()->name ?? ''), (float)($validPackages->first()->price ?? 0), $service->thumbnail ?: 'linear-gradient(140deg,#E0E7FF,#A5B4FC)'],
+                                    ['Bảo mật & Hỗ trợ kỹ thuật', 'Bảo hiểm 100% · Tự động 24/7', 0, 'linear-gradient(140deg,#FEF3C7,#FCD34D)']
+                                ]"
+                                shipping="0"
+                                shippingLabel="Phí xử lý hệ thống"
+                                currency="đ"
+                                promoCode="WELCOME10"
+                                discountPercent="10"
+                                buttonText="{{ Auth::check() ? __('shop.service_order_btn') : __('shop.nav_login') }}"
+                                formId="{{ Auth::check() ? 'serviceOrderForm' : '' }}"
+                                inputName="giftcode"
+                                loginUrl="{{ Auth::check() ? '' : route('login') }}"
+                            />
+                        </div>
                     </form>
                     @endif
                 </aside>
@@ -352,21 +331,12 @@
 @push('scripts')
 <script>
     let currentOriginalPrice = {{ $validPackages->first()->price ?? 0 }};
-    let currentDiscount = 0;
     let selectedPackageId = {{ $validPackages->first()->id ?? 0 }};
 
     function updatePriceUI() {
-        const finalPrice = Math.max(0, currentOriginalPrice - currentDiscount);
-        document.getElementById('summaryOriginalPrice').innerText = currentOriginalPrice.toLocaleString('vi-VN') + ' đ';
-        document.getElementById('summaryFinalPrice').innerText = finalPrice.toLocaleString('vi-VN') + ' đ';
-        document.getElementById('previewPackagePrice').innerText = currentOriginalPrice.toLocaleString('vi-VN') + ' đ';
-        
-        const rowDiscount = document.getElementById('rowDiscount');
-        if (currentDiscount > 0) {
-            rowDiscount.style.display = 'flex';
-            document.getElementById('summaryDiscountAmount').innerText = '-' + currentDiscount.toLocaleString('vi-VN') + ' đ';
-        } else {
-            rowDiscount.style.display = 'none';
+        const previewPrice = document.getElementById('previewPackagePrice');
+        if (previewPrice) {
+            previewPrice.innerText = currentOriginalPrice.toLocaleString('vi-VN') + ' đ';
         }
     }
 
@@ -379,14 +349,15 @@
         
         document.getElementById('formPackageId').value = selectedPackageId;
         document.getElementById('previewPackageName').innerText = elem.dataset.name;
-        
-        // Re-check giftcode if entered
-        const giftcode = document.getElementById('giftcode').value.trim();
-        if (giftcode) {
-            applyDiscountCode();
-        } else {
-            currentDiscount = 0;
-            updatePriceUI();
+        updatePriceUI();
+
+        // Update u230 order summary component dynamically
+        var summaryElem = document.getElementById('serviceCheckoutSummary');
+        if (summaryElem && typeof summaryElem.u230Update === 'function') {
+            summaryElem.u230Update([
+                ['{{ $service->name }}', 'Gói: ' + elem.dataset.name, currentOriginalPrice, '{{ $service->thumbnail ?: "linear-gradient(140deg,#E0E7FF,#A5B4FC)" }}'],
+                ['Bảo mật & Hỗ trợ kỹ thuật', 'Bảo hiểm 100% · Tự động 24/7', 0, 'linear-gradient(140deg,#FEF3C7,#FCD34D)']
+            ], 0);
         }
 
         // Stepper state
@@ -422,71 +393,18 @@
         });
     });
 
-    // Giftcode validation
-    function applyDiscountCode() {
-        const code = document.getElementById('giftcode').value.trim();
-        const feedback = document.getElementById('giftcodeFeedback');
-        
-        if (!code || !selectedPackageId) {
-            feedback.style.display = 'none';
-            currentDiscount = 0;
-            updatePriceUI();
-            return;
-        }
-
-        feedback.style.display = 'block';
-        feedback.style.color = getComputedStyle(document.documentElement).getPropertyValue('--yuki-gold-strong').trim() || '#F5C453';
-        feedback.innerText = 'Đang kiểm tra mã ưu đãi...';
-
-        fetch('/api/discount-codes/validate', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-            },
-            body: JSON.stringify({
-                code: code,
-                context: 'service',
-                item_id: selectedPackageId
-            })
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) {
-                currentDiscount = data.data.savings || 0;
-                feedback.style.color = '#10b981';
-                feedback.innerText = '✓ Mã hợp lệ! Giảm ' + currentDiscount.toLocaleString('vi-VN') + ' đ';
-            } else {
-                currentDiscount = 0;
-                feedback.style.color = '#ef4444';
-                feedback.innerText = data.message || 'Mã giảm giá không hợp lệ';
+    // Append 2FA code to note before submitting
+    var orderForm = document.getElementById('serviceOrderForm');
+    if (orderForm) {
+        orderForm.addEventListener('submit', function() {
+            var twoFaInput = document.getElementById('two_factor_code');
+            var twoFa = twoFaInput ? twoFaInput.value.trim() : '';
+            var noteArea = document.getElementById('note');
+            if (twoFa && noteArea) {
+                noteArea.value = (noteArea.value ? noteArea.value + ' | ' : '') + '2FA/Backup Code: ' + twoFa;
             }
-            updatePriceUI();
-        })
-        .catch(() => {
-            currentDiscount = 0;
-            feedback.style.color = '#ef4444';
-            feedback.innerText = 'Lỗi khi kiểm tra mã';
-            updatePriceUI();
         });
     }
-
-    document.getElementById('btnApplyGiftcode').addEventListener('click', applyDiscountCode);
-    document.getElementById('giftcode').addEventListener('keydown', function(e) {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            applyDiscountCode();
-        }
-    });
-
-    // Append 2FA code to note before submitting
-    document.getElementById('serviceOrderForm').addEventListener('submit', function() {
-        const twoFa = document.getElementById('two_factor_code').value.trim();
-        const noteArea = document.getElementById('note');
-        if (twoFa) {
-            noteArea.value = (noteArea.value ? noteArea.value + ' | ' : '') + '2FA/Backup Code: ' + twoFa;
-        }
-    });
 
     // Initialize UI on page load
     document.addEventListener('DOMContentLoaded', function() {

@@ -125,6 +125,11 @@ Route::prefix('tin-tuc')->name('news.')->group(function () {
     Route::get('/{slug}', [NewsController::class, 'show'])->name('show');
 });
 
+// Order summary promo preview (Prompt #230)
+Route::get('/order-summary', function () {
+    return view('user.order-summary-preview');
+})->name('order-summary.preview');
+
 // Chức năng kiếm tiền đã tắt - chuyển hướng về trang chủ
 Route::any('/nhiem-vu/{any?}', function () {
     return redirect('/');
