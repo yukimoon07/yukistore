@@ -1053,9 +1053,6 @@
                     </div>
                 </div>
             </li>
-                    </div>
-                </div>
-            </li>
 
             <!-- Deposit Dropdown -->
             <li class="nav-dropdown">
@@ -1204,9 +1201,60 @@
                 </div>
             </div>
             @else
-            <a href="{{ route('login') }}" style="text-decoration:none;font-weight:700;padding:7px 16px;border-radius:20px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:#fff;font-size:0.85rem;display:inline-flex;align-items:center;gap:6px;transition:all 0.2s;">
-                <span class="iconify" data-icon="ant-design:user-outlined"></span> {{ __('shop.nav_login') }}
+            <!-- Guest State: Sign in button + 32px Round Avatar Button with Radix DropdownMenu Panel -->
+            <a href="{{ route('login') }}" class="btn-signin-pill" style="text-decoration:none;font-weight:700;padding:7px 16px;border-radius:20px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:#fff;font-size:0.85rem;display:inline-flex;align-items:center;gap:6px;transition:all 0.2s;white-space:nowrap;flex-shrink:0;">
+                <span class="iconify" data-icon="ant-design:login-outlined"></span> {{ __('shop.nav_login') }}
             </a>
+
+            <div class="nav-avatar-wrapper" id="avatarWrapperGuest" style="position: relative; flex-shrink: 0; display: flex; align-items: center;">
+                <!-- 32px Round Avatar Button: <button aria-haspopup="menu" aria-expanded> -->
+                <button type="button"
+                        class="nav-avatar-btn"
+                        id="userMenuTriggerGuest"
+                        aria-haspopup="menu"
+                        aria-expanded="false"
+                        aria-controls="userMenuPanelGuest"
+                        aria-label="User account menu"
+                        title="Tài khoản khách"
+                        style="background: rgba(255, 255, 255, 0.12); border-color: rgba(255, 255, 255, 0.25);"
+                        onclick="toggleGuestAccountMenu(event)">
+                    <span class="iconify" data-icon="ant-design:user-outlined" style="font-size: 16px;"></span>
+                </button>
+
+                <!-- Radix DropdownMenu (align="end") panel under it, flush with avatar's right edge -->
+                <div class="nav-account-menu"
+                     id="userMenuPanelGuest"
+                     role="menu"
+                     aria-labelledby="userMenuTriggerGuest"
+                     style="display: none;">
+                    
+                    <!-- Label: Name and email as label (not a menu item) -->
+                    <div class="account-menu-label" role="presentation">
+                        <div class="account-menu-name">Tài khoản khách</div>
+                        <div class="account-menu-email">Chưa đăng nhập</div>
+                    </div>
+
+                    <div role="separator" class="account-menu-separator"></div>
+
+                    <!-- Items (role="menuitem") -->
+                    <a href="{{ route('login') }}" class="account-menu-item" role="menuitem" tabindex="0">
+                        <span class="iconify" data-icon="ant-design:login-outlined"></span>
+                        <span>Đăng nhập (Sign in)</span>
+                    </a>
+
+                    <a href="{{ route('register') }}" class="account-menu-item" role="menuitem" tabindex="0">
+                        <span class="iconify" data-icon="ant-design:user-add-outlined"></span>
+                        <span>Đăng ký (Sign up)</span>
+                    </a>
+
+                    <div role="separator" class="account-menu-separator"></div>
+
+                    <a href="{{ route('news.index') }}" class="account-menu-item" role="menuitem" tabindex="0">
+                        <span class="iconify" data-icon="ant-design:question-circle-outlined"></span>
+                        <span>Trợ giúp & Hướng dẫn</span>
+                    </a>
+                </div>
+            </div>
             @endif
         </div>
     </div>
@@ -1253,6 +1301,29 @@
         }
     }
 
+    // Toggle Guest Account Menu (Open on click, never hover only)
+    function toggleGuestAccountMenu(e) {
+        if (e) e.stopPropagation();
+        var trigger = document.getElementById('userMenuTriggerGuest');
+        var panel = document.getElementById('userMenuPanelGuest');
+        if (!panel || !trigger) return;
+
+        var isOpen = panel.style.display === 'block';
+        if (isOpen) {
+            panel.style.display = 'none';
+            trigger.setAttribute('aria-expanded', 'false');
+        } else {
+            // Close category dropdown if open
+            var catDropdown = document.getElementById('navCategoriesDropdown');
+            if (catDropdown) catDropdown.classList.remove('open');
+            var catTrigger = document.getElementById('navCategoriesTrigger');
+            if (catTrigger) catTrigger.setAttribute('aria-expanded', 'false');
+
+            panel.style.display = 'block';
+            trigger.setAttribute('aria-expanded', 'true');
+        }
+    }
+
     // Toggle Dropdown On Click & Close on Outside Click
     document.addEventListener('DOMContentLoaded', function() {
         var catDropdown = document.getElementById('navCategoriesDropdown');
@@ -1269,6 +1340,10 @@
                 var userMenuTrigger = document.getElementById('userMenuTrigger');
                 if (userMenuPanel) userMenuPanel.style.display = 'none';
                 if (userMenuTrigger) userMenuTrigger.setAttribute('aria-expanded', 'false');
+                var userMenuPanelGuest = document.getElementById('userMenuPanelGuest');
+                var userMenuTriggerGuest = document.getElementById('userMenuTriggerGuest');
+                if (userMenuPanelGuest) userMenuPanelGuest.style.display = 'none';
+                if (userMenuTriggerGuest) userMenuTriggerGuest.setAttribute('aria-expanded', 'false');
             });
         }
 
@@ -1285,6 +1360,13 @@
                 if (userMenuPanel) userMenuPanel.style.display = 'none';
                 if (userMenuTrigger) userMenuTrigger.setAttribute('aria-expanded', 'false');
             }
+            var avatarWrapperGuest = document.getElementById('avatarWrapperGuest');
+            var userMenuPanelGuest = document.getElementById('userMenuPanelGuest');
+            var userMenuTriggerGuest = document.getElementById('userMenuTriggerGuest');
+            if (avatarWrapperGuest && !avatarWrapperGuest.contains(e.target)) {
+                if (userMenuPanelGuest) userMenuPanelGuest.style.display = 'none';
+                if (userMenuTriggerGuest) userMenuTriggerGuest.setAttribute('aria-expanded', 'false');
+            }
         });
 
         // Close on Esc key
@@ -1300,6 +1382,13 @@
                 if (userMenuTrigger) {
                     userMenuTrigger.setAttribute('aria-expanded', 'false');
                     userMenuTrigger.focus();
+                }
+                var userMenuPanelGuest = document.getElementById('userMenuPanelGuest');
+                var userMenuTriggerGuest = document.getElementById('userMenuTriggerGuest');
+                if (userMenuPanelGuest) userMenuPanelGuest.style.display = 'none';
+                if (userMenuTriggerGuest) {
+                    userMenuTriggerGuest.setAttribute('aria-expanded', 'false');
+                    userMenuTriggerGuest.focus();
                 }
             }
         });
