@@ -132,6 +132,18 @@
             </header>
 
             <!-- Trust & Safety Notices (Image 4) -->
+            @if(isset($activeOrder) && $activeOrder)
+                <div class="warning-alert-box" style="margin-bottom: 20px; border-color: #ef4444; background: rgba(239, 68, 68, 0.12); padding: 18px 20px; border-radius: 14px;">
+                    <i class="fa-solid fa-clock-rotate-left" style="color: #ef4444; font-size: 2rem; flex-shrink: 0; margin-top: 2px;"></i>
+                    <div class="security-alert-content">
+                        <strong style="color: #ef4444; font-size: 1.05rem;">BẠN ĐANG CÓ ĐƠN CÀY THUÊ ĐANG XỬ LÝ!</strong>
+                        <p style="margin: 6px 0 0; color: #f8fafc; font-size: 0.92rem; line-height: 1.5;">
+                            Đơn hàng <strong>#{{ $activeOrder->id }}</strong> (Trạng thái: <strong>{{ $activeOrder->status === 'pending' ? 'Đang chờ nhận đơn' : 'Đang tiến hành cày' }}</strong>) đang được kỹ thuật viên xử lý. Theo quy định, mỗi khách hàng chỉ được đặt <strong>1 đơn trong lúc cày</strong>. Sau khi hoàn tất bạn mới có thể đặt tiếp đơn mới.
+                        </p>
+                    </div>
+                </div>
+            @endif
+
             <div class="security-alert-box">
                 <i class="fa-solid fa-lock security-alert-icon"></i>
                 <div class="security-alert-content">
@@ -152,11 +164,19 @@
                 <!-- Left Column (65%): Package Selection -->
                 <div class="package-panel">
                     <div class="package-panel-header">
-                        <h2 class="package-panel-title">
-                            <i class="fa-solid fa-list-check" style="color: var(--accent-cyan);"></i>
-                            {{ __('shop.service_select_packages') }}
-                            <span class="package-count-badge">{{ $validPackages->count() }} gói</span>
-                        </h2>
+                        <div>
+                            <h2 class="package-panel-title">
+                                <i class="fa-solid fa-list-check" style="color: var(--accent-cyan);"></i>
+                                {{ __('shop.service_select_packages') }}
+                                <span class="package-count-badge">{{ $validPackages->count() }} gói</span>
+                            </h2>
+                            <div style="font-size: 0.85rem; color: #94a3b8; margin-top: 4px;">
+                                <i class="fa-solid fa-circle-info" style="color: var(--accent-amber);"></i> Cho phép chọn tối đa <strong>3 mục cày thuê</strong> cùng 1 lúc trên 1 đơn.
+                                <span id="selectedCountBadge" style="display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 12px; background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.3); color: #34d399; font-weight: 700; font-size: 0.8rem; margin-left: 6px;">
+                                    Đã chọn: <span id="selectedCountNum">1</span>/3
+                                </span>
+                            </div>
+                        </div>
 
                         <!-- Instant Filter Search -->
                         <div style="position: relative;">
@@ -174,10 +194,10 @@
                                  data-price="{{ $package->price }}"
                                  role="button"
                                  tabindex="0"
-                                 onclick="selectPackage(this)">
+                                 onclick="togglePackage(this)">
                                 <div class="package-item-left">
-                                    <div class="package-radio-circle">
-                                        <div class="package-radio-dot"></div>
+                                    <div class="package-checkbox" style="width: 22px; height: 22px; border-radius: 6px; border: 2px solid rgba(255,255,255,0.25); background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.2s;">
+                                        <i class="fa-solid fa-check package-check-icon" style="color: #fff; font-size: 12px; display: {{ $index === 0 ? 'block' : 'none' }};"></i>
                                     </div>
                                     <div>
                                         <div class="package-name">{{ $package->name }}</div>
@@ -217,8 +237,8 @@
 
                     <!-- Selected Package Summary Box -->
                     <div class="selected-package-preview">
-                        <div class="preview-label">Dịch Vụ Đã Chọn:</div>
-                        <div class="preview-name" id="previewPackageName">
+                        <div class="preview-label">DỊCH VỤ ĐÃ CHỌN (<span id="previewCountLabel">1</span>/3):</div>
+                        <div class="preview-name" id="previewPackageName" style="white-space: normal; line-height: 1.4;">
                             {{ $service->packages->first()->name ?? 'Chưa chọn dịch vụ' }}
                         </div>
                         <div class="preview-price" id="previewPackagePrice">
@@ -230,17 +250,10 @@
                     <form action="{{ route('service.order', $service->slug) }}" method="POST" id="serviceOrderForm">
                         @csrf
                         <input type="hidden" name="service_id" value="{{ $service->id }}">
-                        <input type="hidden" name="package_id" id="formPackageId" value="{{ $service->packages->first()->id ?? '' }}">
-
-                        <!-- Server / Khu vực -->
-                        <div class="form-group-gaming">
-                            <label for="server" class="form-label-gaming">
-                                <i class="fa-solid fa-server"></i> Máy chủ / Server
-                            </label>
-                            <input type="text" id="server" name="server" class="form-control-gaming" 
-                                   value="{{ old('server', 'Sea 3 / Mặc định') }}" 
-                                   placeholder="VD: Sea 3, Asia, Server 1..." required>
-                            <div class="form-hint-gaming">Nhập máy chủ hoặc khu vực tài khoản của bạn.</div>
+                        
+                        <!-- Dynamic Selected Package IDs (Up to 3) -->
+                        <div id="packageIdsInputs">
+                            <input type="hidden" name="package_ids[]" value="{{ $service->packages->first()->id ?? '' }}">
                         </div>
 
                         <!-- Game Account -->
@@ -295,11 +308,15 @@
                             </div>
                         @endif
 
-                        <!-- Order Summary with Promo Code Recalculation (Prompt #230) -->
+                        @if(isset($activeOrder) && $activeOrder)
+                            <div style="background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444; border-radius: 12px; padding: 14px; text-align: center; color: #f87171; font-weight: 700; font-size: 0.95rem; margin-top: 16px; margin-bottom: 16px;">
+                                <i class="fa-solid fa-ban me-1"></i> Đang có đơn cày thuê chưa hoàn tất (#{{ $activeOrder->id }}). Tạm khóa đặt đơn mới!
+                            </div>
+                        @else
                         <div class="checkout-u230-container" style="margin-top: 12px;">
                             <x-order-summary-u230 
                                 id="serviceCheckoutSummary"
-                                title="Đơn dịch vụ"
+                                title="Đơn Cày Thuê"
                                 :items="[
                                     [$service->name, 'Gói: ' . ($validPackages->first()->name ?? ''), (float)($validPackages->first()->price ?? 0), $service->thumbnail ?: 'linear-gradient(140deg,#E0E7FF,#A5B4FC)'],
                                     ['Bảo mật & Hỗ trợ kỹ thuật', 'Bảo hiểm 100% · Tự động 24/7', 0, 'linear-gradient(140deg,#FEF3C7,#FCD34D)']
@@ -309,12 +326,13 @@
                                 currency="đ"
                                 promoCode="WELCOME10"
                                 discountPercent="10"
-                                buttonText="{{ Auth::check() ? __('shop.service_order_btn') : __('shop.nav_login') }}"
+                                buttonText="{{ Auth::check() ? 'Xác Nhận Đặt Đơn' : __('shop.nav_login') }}"
                                 formId="{{ Auth::check() ? 'serviceOrderForm' : '' }}"
                                 inputName="giftcode"
                                 loginUrl="{{ Auth::check() ? '' : route('login') }}"
                             />
                         </div>
+                        @endif
                     </form>
                     @endif
                 </aside>
@@ -326,34 +344,47 @@
 
 @push('scripts')
 <script>
-    let currentOriginalPrice = {{ $validPackages->first()->price ?? 0 }};
-    let selectedPackageId = {{ $validPackages->first()->id ?? 0 }};
+    // Selected Packages Array (Max 3)
+    let selectedPackages = [];
+    @if(isset($validPackages) && $validPackages->count() > 0)
+        selectedPackages.push({
+            id: "{{ $validPackages->first()->id }}",
+            name: "{{ addslashes($validPackages->first()->name) }}",
+            price: {{ (int)$validPackages->first()->price }}
+        });
+    @endif
 
-    function updatePriceUI() {
+    function updatePackageSelectionUI() {
+        const previewName = document.getElementById('previewPackageName');
         const previewPrice = document.getElementById('previewPackagePrice');
-        if (previewPrice) {
-            previewPrice.innerText = currentOriginalPrice.toLocaleString('vi-VN') + ' đ';
-        }
-    }
+        const previewCountLabel = document.getElementById('previewCountLabel');
+        const selectedCountNum = document.getElementById('selectedCountNum');
+        const packageIdsInputs = document.getElementById('packageIdsInputs');
 
-    function selectPackage(elem) {
-        document.querySelectorAll('.package-item').forEach(item => item.classList.remove('selected'));
-        elem.classList.add('selected');
+        let totalPrice = 0;
+        let names = [];
+        let inputsHtml = '';
 
-        selectedPackageId = elem.dataset.id;
-        currentOriginalPrice = parseInt(elem.dataset.price) || 0;
-        
-        document.getElementById('formPackageId').value = selectedPackageId;
-        document.getElementById('previewPackageName').innerText = elem.dataset.name;
-        updatePriceUI();
+        selectedPackages.forEach(function(pkg, index) {
+            totalPrice += pkg.price;
+            names.push((selectedPackages.length > 1 ? (index + 1) + '. ' : '') + pkg.name);
+            inputsHtml += '<input type="hidden" name="package_ids[]" value="' + pkg.id + '">';
+        });
+
+        if (previewName) previewName.innerText = names.join(' · ');
+        if (previewPrice) previewPrice.innerText = totalPrice.toLocaleString('vi-VN') + ' đ';
+        if (previewCountLabel) previewCountLabel.innerText = selectedPackages.length;
+        if (selectedCountNum) selectedCountNum.innerText = selectedPackages.length;
+        if (packageIdsInputs) packageIdsInputs.innerHTML = inputsHtml;
 
         // Update u230 order summary component dynamically
         var summaryElem = document.getElementById('serviceCheckoutSummary');
         if (summaryElem && typeof summaryElem.u230Update === 'function') {
-            summaryElem.u230Update([
-                ['{{ $service->name }}', 'Gói: ' + elem.dataset.name, currentOriginalPrice, '{{ $service->thumbnail ?: "linear-gradient(140deg,#E0E7FF,#A5B4FC)" }}'],
-                ['Bảo mật & Hỗ trợ kỹ thuật', 'Bảo hiểm 100% · Tự động 24/7', 0, 'linear-gradient(140deg,#FEF3C7,#FCD34D)']
-            ], 0);
+            var summaryItems = selectedPackages.map(function(pkg) {
+                return ['{{ $service->name }}', 'Gói: ' + pkg.name, pkg.price, '{{ $service->thumbnail ?: "linear-gradient(140deg,#E0E7FF,#A5B4FC)" }}'];
+            });
+            summaryItems.push(['Bảo mật & Hỗ trợ kỹ thuật', 'Bảo hiểm 100% · Tự động 24/7', 0, 'linear-gradient(140deg,#FEF3C7,#FCD34D)']);
+            summaryElem.u230Update(summaryItems, 0);
         }
 
         // Stepper state
@@ -361,8 +392,49 @@
         if (stepper && typeof stepper.setActiveStep === 'function') {
             stepper.setActiveStep(2);
         }
-        var oldStep = document.getElementById('step-2');
-        if (oldStep) oldStep.classList.add('active');
+    }
+
+    function togglePackage(elem) {
+        const pkgId = elem.dataset.id;
+        const pkgName = elem.dataset.name;
+        const pkgPrice = parseInt(elem.dataset.price) || 0;
+        const checkIcon = elem.querySelector('.package-check-icon');
+
+        const existingIndex = selectedPackages.findIndex(p => String(p.id) === String(pkgId));
+
+        if (existingIndex > -1) {
+            // Uncheck
+            if (selectedPackages.length === 1) {
+                if (typeof FuiToast !== 'undefined') {
+                    FuiToast.warning('Vui lòng chọn ít nhất 1 gói cày thuê.');
+                } else {
+                    alert('Vui lòng chọn ít nhất 1 gói cày thuê.');
+                }
+                return;
+            }
+            selectedPackages.splice(existingIndex, 1);
+            elem.classList.remove('selected');
+            if (checkIcon) checkIcon.style.display = 'none';
+        } else {
+            // Check
+            if (selectedPackages.length >= 3) {
+                if (typeof FuiToast !== 'undefined') {
+                    FuiToast.error('Chỉ được chọn tối đa 3 mục cày thuê cùng 1 lúc trên 1 đơn.');
+                } else {
+                    alert('Chỉ được chọn tối đa 3 mục cày thuê cùng 1 lúc trên 1 đơn.');
+                }
+                return;
+            }
+            selectedPackages.push({
+                id: pkgId,
+                name: pkgName,
+                price: pkgPrice
+            });
+            elem.classList.add('selected');
+            if (checkIcon) checkIcon.style.display = 'block';
+        }
+
+        updatePackageSelectionUI();
     }
 
     function togglePasswordVisibility() {
@@ -380,7 +452,7 @@
     }
 
     // Real-time package search filter
-    document.getElementById('packageFilterInput').addEventListener('input', function(e) {
+    document.getElementById('packageFilterInput')?.addEventListener('input', function(e) {
         const query = e.target.value.toLowerCase().trim();
         const items = document.querySelectorAll('.package-item');
         items.forEach(item => {
@@ -409,7 +481,7 @@
 
     // Initialize UI on page load
     document.addEventListener('DOMContentLoaded', function() {
-        updatePriceUI();
+        updatePackageSelectionUI();
     });
 </script>
 <style>

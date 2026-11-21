@@ -80,8 +80,6 @@
 
                                             @if(isset($category->price) && $category->price > 0)
                                                 <span class="yk-tile__price">{{ number_format($category->price) }} đ</span>
-                                            @else
-                                                <span class="yk-tile__badge">ACC VIP</span>
                                             @endif
                                         </div>
 

@@ -54,9 +54,13 @@
                             </div>
                             
                             <div class="col-lg-12 d-flex align-items-center mb-3">
-                                <div class="form-check form-switch mt-2">
+                                <div class="form-check form-switch mt-2 me-4">
                                     <input class="form-check-input" type="checkbox" name="active" id="active" value="1" {{ old('active', '1') == '1' ? 'checked' : '' }}>
                                     <label class="form-check-label fw-semibold" for="active">Kích hoạt hiển thị</label>
+                                </div>
+                                <div class="form-check form-switch mt-2">
+                                    <input class="form-check-input" type="checkbox" name="is_featured" id="is_featured" value="1" {{ old('is_featured') ? 'checked' : '' }}>
+                                    <label class="form-check-label fw-semibold text-warning" for="is_featured"><i class="fa fa-star"></i> Dịch vụ nổi bật (Trang chủ)</label>
                                 </div>
                                 @error('active')
                                     <div class="invalid-feedback d-block ms-3">{{ $message }}</div>

@@ -37,36 +37,26 @@
             <div>
                 <h4 style="color:#f8fafc;font-size:0.9rem;font-weight:700;margin-bottom:16px;text-transform:uppercase;letter-spacing:1px;">{{ __('shop.footer_contact') }}</h4>
                 <div style="display:flex;flex-direction:column;gap:10px;font-size:0.85rem;color:#cbd5e1;">
+                    <div><i class="fa-solid fa-phone me-2" style="color:var(--yuki-gold, #E8B33C);"></i> Zalo: <a href="https://zalo.me/0373992680" target="_blank" rel="noopener noreferrer" style="color:#f8fafc;font-weight:600;text-decoration:none;">0373992680</a></div>
+                    <div><i class="fa-brands fa-facebook me-2" style="color:#3b82f6;"></i> Facebook: <a href="https://www.facebook.com/profile.php?id=61554102541296" target="_blank" rel="noopener noreferrer" style="color:var(--yuki-gold, #E8B33C);text-decoration:none;">Yukistore Official</a></div>
+                    <div><i class="fa-brands fa-discord me-2" style="color:#6366f1;"></i> Discord: <a href="https://discord.gg/sPPEKffZrH" target="_blank" rel="noopener noreferrer" style="color:var(--yuki-gold, #E8B33C);text-decoration:none;">Tham gia Discord</a></div>
                     @if(config_get('email'))
-                    <div>Email: <a href="mailto:{{ config_get('email') }}" style="color:var(--yuki-gold, #E8B33C);text-decoration:none;">{{ config_get('email') }}</a></div>
+                    <div><i class="fa-solid fa-envelope me-2" style="color:#94a3b8;"></i> Email: <a href="mailto:{{ config_get('email') }}" style="color:var(--yuki-gold, #E8B33C);text-decoration:none;">{{ config_get('email') }}</a></div>
                     @endif
-                    @if(config_get('phone'))
-                    <div>Hotline: <span style="color:#f8fafc;font-weight:600;">{{ config_get('phone') }}</span></div>
-                    @endif
-                    @if(config_get('address'))
-                    <div>{{ config_get('address') }}</div>
-                    @endif
-                    @if(config_get('working_hours'))
-                    <div>{{ __('shop.working_hours') }}: {{ config_get('working_hours') }}</div>
-                    @endif
+                    <div><i class="fa-solid fa-clock me-2" style="color:#10b981;"></i> {{ __('shop.working_hours') }}: 24/7 Tự động</div>
                 </div>
                 <div style="display:flex;gap:12px;margin-top:16px;">
-                    @if(config_get('facebook'))
-                    <a href="{{ config_get('facebook') }}" target="_blank" rel="noopener noreferrer" aria-label="Facebook" style="color:var(--yuki-gold, #E8B33C);font-size:1.4rem;transition:transform .2s;"><i class="fab fa-facebook"></i></a>
-                    @endif
-                    @if(config_get('youtube'))
-                    <a href="{{ config_get('youtube') }}" target="_blank" rel="noopener noreferrer" aria-label="YouTube" style="color:#ef4444;font-size:1.4rem;transition:transform .2s;"><i class="fab fa-youtube"></i></a>
-                    @endif
-                    @if(config_get('telegram'))
-                    <a href="{{ config_get('telegram') }}" target="_blank" rel="noopener noreferrer" aria-label="Telegram" style="color:#C2922A;font-size:1.4rem;transition:transform .2s;"><i class="fab fa-telegram"></i></a>
-                    @endif
+                    <a href="https://zalo.me/0373992680" target="_blank" rel="noopener noreferrer" aria-label="Zalo" style="color:#38bdf8;font-size:1.4rem;transition:transform .2s;" title="Zalo: 0373992680"><i class="fa-solid fa-comment-dots"></i></a>
+                    <a href="https://www.facebook.com/profile.php?id=61554102541296" target="_blank" rel="noopener noreferrer" aria-label="Facebook" style="color:#3b82f6;font-size:1.4rem;transition:transform .2s;" title="Facebook Fanpage"><i class="fab fa-facebook"></i></a>
+                    <a href="https://discord.gg/sPPEKffZrH" target="_blank" rel="noopener noreferrer" aria-label="Discord" style="color:#818cf8;font-size:1.4rem;transition:transform .2s;" title="Discord Community"><i class="fab fa-discord"></i></a>
                 </div>
             </div>
         </div>
 
         <!-- Bottom bar -->
         <div style="border-top:1px solid rgba(255,255,255,0.06);padding:20px 0;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;font-size:0.82rem;color:#64748b;">
-            <div>© {{ date('Y') }} {{ config_get('site_name', 'ShopGame') }}. {{ __('shop.footer_rights') }}</div>
+            <div>Bản quyền web thuộc Yukistore. © {{ date('Y') }} Yukistore. All rights reserved.</div>
+            <div>Uy tín - Chất lượng - Nhanh chóng 24/7</div>
         </div>
     </div>
 </footer>

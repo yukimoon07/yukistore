@@ -140,6 +140,68 @@
 </section>
 
 {{-- ============================================================
+     DỊCH VỤ NỔI BẬT (Featured Services)
+     ============================================================ --}}
+@if(isset($featuredServices) && $featuredServices->count() > 0)
+<section class="yk-section yk-featured-services" style="padding-top: 15px; padding-bottom: 25px;">
+    <div class="container">
+        <div style="margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding-bottom: 12px;">
+            <div>
+                <span style="display: inline-flex; align-items: center; gap: 6px; font-size: 0.8rem; font-weight: 700; color: var(--yuki-gold, #E8B33C); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">
+                    <i class="fa-solid fa-fire"></i> Dịch Vụ Hot Nhất
+                </span>
+                <h2 style="margin: 0; font-size: 1.45rem; font-weight: 800; color: #fff;">
+                    Dịch Vụ Nổi Bật
+                </h2>
+            </div>
+            <a href="{{ route('service.index') }}" style="color: var(--yuki-gold, #E8B33C); font-weight: 600; font-size: 0.9rem; text-decoration: none;">
+                Xem tất cả <i class="fa-solid fa-arrow-right ms-1"></i>
+            </a>
+        </div>
+
+        <div class="row g-3">
+            @foreach($featuredServices as $fService)
+                <div class="col-6 col-md-4 col-lg-3">
+                    <div class="h-100" style="background: rgba(18, 23, 37, 0.85); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; transition: transform 0.2s, border-color 0.2s;">
+                        <div style="position: relative; width: 100%; aspect-ratio: 16/9; overflow: hidden; background: #0b0f19;">
+                            <img src="{{ $fService->thumbnail ?: asset('img/logo.svg') }}" 
+                                 alt="{{ $fService->name }}" 
+                                 style="width: 100%; height: 100%; object-fit: cover;"
+                                 loading="lazy">
+                            <span style="position: absolute; top: 8px; left: 8px; background: rgba(232, 179, 60, 0.95); color: #000; font-size: 0.7rem; font-weight: 800; padding: 2px 7px; border-radius: 5px; text-transform: uppercase;">
+                                <i class="fa-solid fa-star"></i> Nổi bật
+                            </span>
+                        </div>
+                        <div style="padding: 12px 14px; flex: 1; display: flex; flex-direction: column; justify-content: space-between;">
+                            <div>
+                                <h3 style="font-size: 0.95rem; font-weight: 700; color: #fff; margin-bottom: 6px; line-height: 1.35; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                    {{ $fService->name }}
+                                </h3>
+                                <p style="font-size: 0.8rem; color: #94a3b8; line-height: 1.4; margin-bottom: 10px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-height: 2.2em;">
+                                    {{ Str::limit(strip_tags($fService->description), 65) }}
+                                </p>
+                            </div>
+                            <div style="border-top: 1px solid rgba(255, 255, 255, 0.06); padding-top: 10px; display: flex; align-items: center; justify-content: space-between;">
+                                <div>
+                                    <span style="font-size: 0.7rem; color: #64748b; display: block;">Giá từ</span>
+                                    <span style="font-size: 1rem; font-weight: 800; color: var(--yuki-gold, #E8B33C);">
+                                        {{ $fService->min_price ? number_format($fService->min_price) . 'đ' : 'Liên hệ' }}
+                                    </span>
+                                </div>
+                                <a href="{{ route('service.show', ['slug' => $fService->slug]) }}" class="btn btn-sm btn-primary" style="padding: 4px 12px; font-size: 0.8rem; font-weight: 700; border-radius: 6px; background: var(--yuki-gold, #E8B33C); border-color: var(--yuki-gold, #E8B33C); color: #000;">
+                                    Thuê ngay
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            @endforeach
+        </div>
+    </div>
+</section>
+@endif
+
+{{-- ============================================================
      THÔNG BÁO — marquee
      ============================================================ --}}
 @php
@@ -338,8 +400,6 @@
                                     @endif
                                     @if(isset($category->price) && $category->price > 0)
                                         <span class="yk-tile__price">{{ number_format($category->price) }} đ</span>
-                                    @else
-                                        <span class="yk-tile__badge">{{ __('shop.card_vip_badge') }}</span>
                                     @endif
                                 </div>
                                 <div class="yk-tile__body">
@@ -456,9 +516,75 @@
 @endif
 
 {{-- ============================================================
-     XÁC THỰC MUA HÀNG — chỉ dữ liệu thật, không bịa đánh giá
+     ĐÁNH GIÁ TỪ KHÁCH HÀNG (Tối đa 7 đánh giá mới nhất)
      ============================================================ --}}
-@if (!empty($recentPurchases) && count($recentPurchases) > 0)
+@if (isset($latestReviews) && $latestReviews->count() > 0)
+<section class="yk-section yk-section--tight" style="padding-top: 30px; padding-bottom: 40px;">
+    <div class="container">
+        <div class="yk-section-head" style="margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between;">
+            <div>
+                <span style="font-size: 0.8rem; font-weight: 700; color: var(--yuki-gold, #E8B33C); text-transform: uppercase; letter-spacing: 0.05em; display: inline-flex; align-items: center; gap: 6px;">
+                    <i class="fa-solid fa-comments"></i> Phản Hồi Thực Tế
+                </span>
+                <h2 class="yk-section-title" style="margin-top: 4px; font-size: 1.45rem; font-weight: 800; color: #fff;">
+                    Đánh Giá Từ Khách Hàng
+                </h2>
+            </div>
+            <div style="font-size: 0.85rem; color: #94a3b8;">
+                <i class="fa-solid fa-shield-check text-success me-1"></i> 100% Đánh giá từ khách đã hoàn tất đơn hàng
+            </div>
+        </div>
+
+        <div class="row g-3">
+            @foreach($latestReviews as $review)
+                <div class="col-12 col-md-6 col-lg-4">
+                    <div style="background: rgba(18, 23, 37, 0.85); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 18px; display: flex; flex-direction: column; justify-content: space-between; height: 100%;">
+                        <div>
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <div class="d-flex align-items-center gap-2">
+                                    <div style="width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, #f59e0b, #d97706); display: flex; align-items: center; justify-content: center; font-weight: 800; color: #000; font-size: 0.9rem;">
+                                        {{ mb_strtoupper(mb_substr($review->user->name ?? $review->user->username ?? 'U', 0, 1)) }}
+                                    </div>
+                                    <div>
+                                        <div style="font-weight: 700; color: #fff; font-size: 0.95rem;">
+                                            @php
+                                                $uName = $review->user->name ?? $review->user->username ?? 'Khách hàng';
+                                                $uLen = mb_strlen($uName);
+                                                $masked = $uLen > 4 ? mb_substr($uName, 0, 2) . '***' . mb_substr($uName, -2) : $uName;
+                                            @endphp
+                                            {{ $masked }}
+                                        </div>
+                                        <div style="font-size: 0.75rem; color: #64748b;">
+                                            {{ $review->created_at ? $review->created_at->diffForHumans() : 'Vừa xong' }}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="d-flex text-warning" style="font-size: 0.85rem;">
+                                    @for($s = 1; $s <= 5; $s++)
+                                        <i class="fa-solid fa-star {{ $s <= $review->rating ? '' : 'text-muted' }}"></i>
+                                    @endfor
+                                </div>
+                            </div>
+
+                            @if($review->serviceOrder && $review->serviceOrder->gameService)
+                                <div style="margin-bottom: 8px;">
+                                    <span style="font-size: 0.75rem; background: rgba(56, 189, 248, 0.15); color: #38bdf8; padding: 2px 8px; border-radius: 4px; font-weight: 600;">
+                                        <i class="fa-solid fa-gamepad me-1"></i> {{ $review->serviceOrder->gameService->name }}
+                                    </span>
+                                </div>
+                            @endif
+
+                            <p style="font-size: 0.88rem; color: #cbd5e1; line-height: 1.5; margin: 0; font-style: italic;">
+                                "{{ $review->comment }}"
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            @endforeach
+        </div>
+    </div>
+</section>
+@elseif (!empty($recentPurchases) && count($recentPurchases) > 0)
 <section class="yk-section yk-section--tight">
     <div class="container">
         <div class="yk-section-head">

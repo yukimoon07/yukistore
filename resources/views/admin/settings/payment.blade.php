@@ -67,7 +67,8 @@
                                     <label class="form-label">Website đối tác <span class="text-danger">*</span></label>
                                     <select name="partner_website_card"
                                         class="form-select @error('partner_website_card') is-invalid @enderror">
-                                        <option value="khothegame.com" selected>KHOTHEGAME.COM</option>
+                                        <option value="cark2k.net" {{ old('partner_website_card', $configs['partner_website_card'] ?? '') == 'cark2k.net' || old('partner_website_card', $configs['partner_website_card'] ?? '') == '' ? 'selected' : '' }}>CARK2K.NET / CARD2K.COM</option>
+                                        <option value="khothegame.com" {{ old('partner_website_card', $configs['partner_website_card'] ?? '') == 'khothegame.com' ? 'selected' : '' }}>KHOTHEGAME.COM</option>
                                     </select>
                                     @error('partner_website_card')
                                         <div class="invalid-feedback">{{ $message }}</div>
@@ -78,7 +79,7 @@
                                 <div class="mb-3">
                                     <label class="form-label">Chiết khấu nạp thẻ <span class="text-danger">*</span></label>
                                     <input type="text" name="discount_percent_card"
-                                        value="{{ old('discount_percent_card', $configs['discount_percent_card']) }}"
+                                        value="{{ old('discount_percent_card', $configs['discount_percent_card'] ?? 0) }}"
                                         class="form-control @error('discount_percent_card') is-invalid @enderror"
                                         placeholder="Nhập chiết khấu nạp thẻ">
                                     @error('discount_percent_card')
@@ -90,7 +91,7 @@
                                 <div class="mb-3">
                                     <label class="form-label">Partner ID <span class="text-danger">*</span></label>
                                     <input type="text" name="partner_id_card"
-                                        value="{{ old('partner_id_card', $configs['partner_id_card']) }}"
+                                        value="{{ old('partner_id_card', $configs['partner_id_card'] ?? '84481765167') }}"
                                         class="form-control @error('partner_id_card') is-invalid @enderror"
                                         placeholder="Nhập Partner ID">
                                     @error('partner_id_card')
@@ -102,7 +103,7 @@
                                 <div class="mb-3">
                                     <label class="form-label">Partner Key <span class="text-danger">*</span></label>
                                     <input type="text" name="partner_key_card"
-                                        value="{{ old('partner_key_card', $configs['partner_key_card']) }}"
+                                        value="{{ old('partner_key_card', $configs['partner_key_card'] ?? 'PqeP0rjMARYCxmTPxQwA7yRGMU2DYxvI') }}"
                                         class="form-control @error('partner_key_card') is-invalid @enderror"
                                         placeholder="Nhập Partner Key">
                                     @error('partner_key_card')

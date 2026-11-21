@@ -13,6 +13,21 @@ use Illuminate\Support\Facades\Log;
 
 class GoogleController extends Controller
 {
+    public function __construct()
+    {
+        $clientId = config_get('login_social.google.client_id') ?: env('GOOGLE_CLIENT_ID');
+        $clientSecret = config_get('login_social.google.client_secret') ?: env('GOOGLE_CLIENT_SECRET');
+        $redirect = config_get('login_social.google.redirect') ?: (env('GOOGLE_REDIRECT_URI') ?: url('/auth/google/callback'));
+
+        if ($clientId && $clientSecret) {
+            config([
+                'services.google.client_id' => $clientId,
+                'services.google.client_secret' => $clientSecret,
+                'services.google.redirect' => $redirect,
+            ]);
+        }
+    }
+
     /**
      * Redirect the user to the Google authentication page.
      *
@@ -20,7 +35,15 @@ class GoogleController extends Controller
      */
     public function redirectToGoogle()
     {
-        return Socialite::driver('google')->redirect();
+        try {
+            if (empty(config('services.google.client_id'))) {
+                return redirect()->route('login')->with('error', 'Chức năng đăng nhập Google đang được cấu hình. Vui lòng đăng nhập bằng tài khoản.');
+            }
+            return Socialite::driver('google')->redirect();
+        } catch (\Exception $e) {
+            Log::error('Google OAuth redirect error: ' . $e->getMessage());
+            return redirect()->route('login')->with('error', 'Không thể kết nối đến Google. Vui lòng thử lại sau.');
+        }
     }
 
     /**

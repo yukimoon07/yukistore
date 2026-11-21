@@ -31,9 +31,18 @@ class LoginRequest extends FormRequest
      */
     public function rules(): array
     {
+        if ($this->has('email') && !$this->has('username')) {
+            $this->fieldInput = 'email';
+        }
+
         return [
             $this->fieldInput => ['required', 'string'],
             'password' => ['required', 'string'],
+            'captcha' => [app()->environment('testing') ? 'nullable' : 'required', function ($attribute, $value, $fail) {
+                if (!app()->environment('testing') && !\App\Helpers\CaptchaHelper::verify($value, 'login')) {
+                    $fail('Mã xác thực (Captcha) không chính xác.');
+                }
+            }],
         ];
     }
 
@@ -44,7 +53,7 @@ class LoginRequest extends FormRequest
      */
     public function authenticate(): void
     {
-        $username = $this->input('username');
+        $username = $this->input('username') ?: $this->input('email');
 
         if (filter_var($username, FILTER_VALIDATE_EMAIL)) {
             $this->fieldInput = 'email';

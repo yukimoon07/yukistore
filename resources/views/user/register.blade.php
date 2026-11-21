@@ -217,6 +217,22 @@
                 <small id="pw-match-text" style="display:none;color:#16a34a;font-size:0.78rem;">✓ Mật khẩu khớp</small>
             </div>
 
+            @php
+                $registerCaptcha = \App\Helpers\CaptchaHelper::generate('register');
+            @endphp
+            <div class="form-group">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                    <label for="captcha" class="form-label" style="margin-bottom: 0;">Mã bảo vệ (Captcha)</label>
+                    <span style="background: rgba(232, 179, 60, 0.15); color: var(--yuki-gold, #E8B33C); padding: 2px 10px; border-radius: 6px; font-weight: 700; font-size: 0.95rem; border: 1px solid rgba(232, 179, 60, 0.3);">
+                        {{ $registerCaptcha['question'] }}
+                    </span>
+                </div>
+                <input id="captcha" type="number" class="form-input @error('captcha') is-invalid @enderror" name="captcha" required placeholder="Nhập kết quả phép tính...">
+                @error('captcha')
+                    <span class="form-error">{{ $message }}</span>
+                @enderror
+            </div>
+
             <button type="submit" class="auth-btn">
                 Đăng Ký Ngay
             </button>
@@ -253,23 +269,18 @@ function checkMatch(confirmVal, pwVal) {
 }
 </script>
 
-        @if (config_get('login_social.google.active', false) || config_get('login_social.facebook.active', false))
-            <div class="social-divider">Hoặc đăng ký bằng</div>
-            
-            @if (config_get('login_social.google.active', false))
-                <a href="{{ route('auth.google') }}" class="social-btn">
-                    <span class="iconify" data-icon="flat-color-icons:google" style="font-size:1.2rem;"></span>
-                    Google
-                </a>
-            @endif
-            
-            @if (config_get('login_social.facebook.active', false))
-                <a href="{{ route('auth.facebook') }}" class="social-btn">
-                    <span class="iconify" data-icon="logos:facebook" style="font-size:1.2rem;"></span>
-                    Facebook
-                </a>
-            @endif
-        @endif
+        <div class="social-divider">Hoặc đăng ký bằng</div>
+        
+        <div style="display: flex; gap: 10px; margin-bottom: 16px;">
+            <a href="{{ route('auth.google') }}" class="social-btn" style="flex: 1; text-decoration: none;">
+                <span class="iconify" data-icon="flat-color-icons:google" style="font-size:1.2rem;"></span>
+                Google
+            </a>
+            <a href="{{ route('auth.facebook') }}" class="social-btn" style="flex: 1; text-decoration: none;">
+                <span class="iconify" data-icon="logos:facebook" style="font-size:1.2rem;"></span>
+                Facebook
+            </a>
+        </div>
 
         <div class="auth-links">
             Đã có tài khoản? <a href="{{ route('login') }}">Đăng nhập</a>

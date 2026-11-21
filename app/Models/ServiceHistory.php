@@ -22,6 +22,8 @@ class ServiceHistory extends Model
         'discount_amount',
         'status',
         'admin_note',
+        'package_names',
+        'user_note',
         'completed_at'
     ];
 

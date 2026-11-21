@@ -26,16 +26,6 @@
                 <i class="fa-solid fa-chart-line"></i> Biến động số dư
             </a>
         </li>
-        <li class="sidebar-item {{ request()->routeIs('profile.withdraw.*') ? 'active' : '' }}">
-            <a href="{{ route('profile.withdraw.create') }}" class="sidebar-link">
-                <i class="fa-solid fa-money-bill-wave"></i> Rút tiền
-            </a>
-        </li>
-        <li class="sidebar-item {{ request()->routeIs('profile.affiliate') ? 'active' : '' }}">
-            <a href="{{ route('profile.affiliate') }}" class="sidebar-link">
-                <i class="fa-solid fa-users"></i> Tiếp thị liên kết
-            </a>
-        </li>
     </ul>
 
     <div class="sidebar-header mt-4">
@@ -55,11 +45,6 @@
         <li class="sidebar-item {{ request()->routeIs('profile.purchased-random-accounts') ? 'active' : '' }}">
             <a href="{{ route('profile.purchased-random-accounts') }}" class="sidebar-link">
                 <i class="fa-solid fa-dice"></i> Random đã mua
-            </a>
-        </li>
-        <li class="sidebar-item {{ request()->routeIs('profile.installments') ? 'active' : '' }}">
-            <a href="{{ route('profile.installments') }}" class="sidebar-link">
-                <i class="fa-solid fa-hand-holding-usd"></i> Mua trả góp
             </a>
         </li>
         

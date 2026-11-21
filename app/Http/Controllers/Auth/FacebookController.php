@@ -13,6 +13,21 @@ use Illuminate\Support\Facades\Log;
 
 class FacebookController extends Controller
 {
+    public function __construct()
+    {
+        $clientId = config_get('login_social.facebook.client_id') ?: env('FACEBOOK_CLIENT_ID', '713944317580357');
+        $clientSecret = config_get('login_social.facebook.client_secret') ?: env('FACEBOOK_CLIENT_SECRET', '481beed7538a8b7318c45e94401f4e3c');
+        $redirect = config_get('login_social.facebook.redirect') ?: (env('FACEBOOK_REDIRECT_URI') ?: url('/auth/facebook/callback'));
+
+        if ($clientId && $clientSecret) {
+            config([
+                'services.facebook.client_id' => $clientId,
+                'services.facebook.client_secret' => $clientSecret,
+                'services.facebook.redirect' => $redirect,
+            ]);
+        }
+    }
+
     /**
      * Redirect the user to the Facebook authentication page.
      *
@@ -20,7 +35,15 @@ class FacebookController extends Controller
      */
     public function redirectToFacebook()
     {
-        return Socialite::driver('facebook')->redirect();
+        try {
+            if (empty(config('services.facebook.client_id'))) {
+                return redirect()->route('login')->with('error', 'Chức năng đăng nhập Facebook đang được cấu hình. Vui lòng đăng nhập bằng tài khoản.');
+            }
+            return Socialite::driver('facebook')->redirect();
+        } catch (\Exception $e) {
+            Log::error('Facebook OAuth redirect error: ' . $e->getMessage());
+            return redirect()->route('login')->with('error', 'Không thể kết nối đến Facebook. Vui lòng thử lại sau.');
+        }
     }
 
     /**

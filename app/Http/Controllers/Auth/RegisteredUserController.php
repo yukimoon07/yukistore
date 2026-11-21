@@ -52,9 +52,15 @@ class RegisteredUserController extends Controller
                 'regex:/^[a-zA-Z][a-zA-Z0-9_]+$/',
                 Rule::unique(User::class),
             ],
-            'email' => ['required', 'string', 'lowercase', 'email:rfc,dns', 'max:255', Rule::unique(User::class)],
+            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', Rule::unique(User::class)],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'captcha' => [app()->environment('testing') ? 'nullable' : 'required', function ($attribute, $value, $fail) {
+                if (!app()->environment('testing') && !\App\Helpers\CaptchaHelper::verify($value, 'register')) {
+                    $fail('Mã xác thực (Captcha) không chính xác.');
+                }
+            }],
         ], [
+            'captcha.required'  => 'Vui lòng nhập mã bảo vệ (Captcha).',
             'username.required' => 'Vui lòng nhập tên tài khoản.',
             'username.min'      => 'Tên tài khoản tối thiểu 3 ký tự.',
             'username.max'      => 'Tên tài khoản tối đa 24 ký tự.',

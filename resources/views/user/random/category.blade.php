@@ -54,11 +54,11 @@
                 <div class="yk-buy__content">
                     <div class="yk-buy__header">
                         <div class="yk-buy__pill">
-                            <i class="fa-solid fa-shield-halved"></i> Giao dịch tự động 100%
+                            <i class="fa-solid fa-shield-halved"></i> {{ $category->custom_badge ?: 'Giao dịch tự động 100%' }}
                         </div>
                         <h1 class="yk-buy__heading">{{ $category->name }}</h1>
                         <p class="yk-buy__lead">
-                            Nhận ngay 1 tài khoản ngẫu nhiên từ hệ thống. Thông tin đăng nhập hiển thị ngay trên màn hình và lưu vĩnh viễn trong mục <em>Lịch sử mua tài khoản</em>.
+                            {!! $category->custom_lead ? nl2br(e($category->custom_lead)) : 'Nhận ngay 1 tài khoản ngẫu nhiên từ hệ thống. Thông tin đăng nhập hiển thị ngay trên màn hình và lưu vĩnh viễn trong mục <em>Lịch sử mua tài khoản</em>.' !!}
                         </p>
                     </div>
 
@@ -87,15 +87,15 @@
                     <div class="yk-buy__guarantees">
                         <div class="yk-buy__guarantee-item">
                             <i class="fa-solid fa-bolt-lightning" style="color: var(--yuki-gold, #E8B33C);"></i>
-                            <span>Giao tài khoản tự động 24/7 chỉ trong 3 giây</span>
+                            <span>{{ $category->guarantee_1 ?: 'Giao tài khoản tự động 24/7 chỉ trong 3 giây' }}</span>
                         </div>
                         <div class="yk-buy__guarantee-item">
                             <i class="fa-solid fa-circle-check" style="color: #10b981;"></i>
-                            <span>Cam kết chuẩn thông tin & tỉ lệ trúng đúng công bố</span>
+                            <span>{{ $category->guarantee_2 ?: 'Cam kết chuẩn thông tin & tỉ lệ trúng đúng công bố' }}</span>
                         </div>
                         <div class="yk-buy__guarantee-item">
                             <i class="fa-solid fa-rotate-left" style="color: #60a5fa;"></i>
-                            <span>Hỗ trợ bảo hành 1 đổi 1 nếu tài khoản sai mật khẩu</span>
+                            <span>{{ $category->guarantee_3 ?: 'Hỗ trợ bảo hành 1 đổi 1 nếu tài khoản sai mật khẩu' }}</span>
                         </div>
                     </div>
 

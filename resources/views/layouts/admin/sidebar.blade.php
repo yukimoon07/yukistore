@@ -49,13 +49,6 @@
                     </ul>
                 </li>
                 
-                <li class="pc-item {{ request()->routeIs('admin.installments.*') ? 'active' : '' }}">
-                    <a href="{{ route('admin.installments.index') }}" class="pc-link">
-                        <span class="pc-micon"><i class="ti ti-receipt"></i></span>
-                        <span class="pc-mtext">Quản lý Trả Góp</span>
-                    </a>
-                </li>
-                
                 <li class="pc-item {{ request()->routeIs('admin.flash-sales.*') ? 'active' : '' }}">
                     <a href="{{ route('admin.flash-sales.index') }}" class="pc-link">
                         <span class="pc-micon"><i class="ti ti-bolt"></i></span>

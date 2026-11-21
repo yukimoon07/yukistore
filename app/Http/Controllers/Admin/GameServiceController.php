@@ -37,12 +37,14 @@ class GameServiceController extends Controller
                 'description' => 'required|string',
                 'type' => 'required|in:gold,gem,leveling',
                 'active' => 'required|boolean',
+                'is_featured' => 'nullable|boolean',
                 'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif',
             ]);
 
             DB::beginTransaction();
 
             $data = $request->except(['thumbnail']);
+            $data['is_featured'] = $request->has('is_featured') ? (bool) $request->is_featured : false;
             $data['slug'] = Str::slug($request->name);
 
             // Store thumbnail
@@ -84,12 +86,14 @@ class GameServiceController extends Controller
                 'description' => 'required|string',
                 'type' => 'required|in:gold,gem,leveling',
                 'active' => 'required|boolean',
+                'is_featured' => 'nullable|boolean',
                 'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif',
             ]);
 
             DB::beginTransaction();
 
             $data = $request->except(['thumbnail']);
+            $data['is_featured'] = $request->has('is_featured') ? (bool) $request->is_featured : false;
             $data['slug'] = Str::slug($request->name);
 
             if ($request->hasFile('thumbnail')) {

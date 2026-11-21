@@ -34,6 +34,36 @@ class ProfileController extends Controller
         ]);
     }
 
+    public function updateProfile(Request $request)
+    {
+        $user = $request->user();
+
+        $request->validate([
+            'name' => 'nullable|string|max:100',
+            'phone' => 'nullable|string|max:15',
+            'email' => 'nullable|email|max:255|unique:users,email,' . $user->id,
+            'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+        ], [
+            'email.unique' => 'Email này đã được sử dụng bởi tài khoản khác.',
+            'avatar.image' => 'Ảnh đại diện phải là file hình ảnh.',
+            'avatar.max' => 'Ảnh đại diện không được vượt quá 2MB.',
+        ]);
+
+        $user->name = $request->name;
+        $user->phone = $request->phone;
+        if ($request->filled('email')) {
+            $user->email = $request->email;
+        }
+
+        if ($request->hasFile('avatar')) {
+            $user->avatar = \App\Helpers\UploadHelper::upload($request->file('avatar'), 'avatars');
+        }
+
+        $user->save();
+
+        return redirect()->back()->with('success', 'Cập nhật thông tin tài khoản thành công!');
+    }
+
     public function viewChangePassword(Request $request)
     {
         $title = 'Đổi mật khẩu';

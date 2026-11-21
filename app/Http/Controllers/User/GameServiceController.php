@@ -11,7 +11,13 @@ class GameServiceController extends Controller
     {
         $service = GameService::with(['activePackages'])->where('slug', $slug)->firstOrFail();
         $title = $service->name;
-        return view('user.service.show', compact('service', 'title'));
+        $activeOrder = \Auth::check()
+            ? \App\Models\ServiceHistory::where('user_id', \Auth::id())
+                ->whereIn('status', ['pending', 'processing'])
+                ->latest()
+                ->first()
+            : null;
+        return view('user.service.show', compact('service', 'title', 'activeOrder'));
     }
     public function showAll()
     {

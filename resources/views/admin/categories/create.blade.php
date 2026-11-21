@@ -156,6 +156,45 @@
                                     @enderror
                                 </div>
                             </div>
+
+                            <div class="col-lg-12">
+                                <h5 class="mt-3 mb-2 text-primary"><i class="fa fa-sliders"></i> Tùy chỉnh hiển thị chi tiết (Mô tả, Pill, Cam kết)</h5>
+                            </div>
+
+                            <div class="col-lg-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Nhãn nổi bật (Badge/Pill)</label>
+                                    <input type="text" name="custom_badge" class="form-control" value="{{ old('custom_badge') }}" placeholder="VD: Giao dịch tự động 100%">
+                                </div>
+                            </div>
+
+                            <div class="col-lg-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Cam kết 1</label>
+                                    <input type="text" name="guarantee_1" class="form-control" value="{{ old('guarantee_1') }}" placeholder="VD: Giao tài khoản tự động 24/7 chỉ trong 3 giây">
+                                </div>
+                            </div>
+
+                            <div class="col-lg-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Cam kết 2</label>
+                                    <input type="text" name="guarantee_2" class="form-control" value="{{ old('guarantee_2') }}" placeholder="VD: Cam kết chuẩn thông tin & tỉ lệ trúng đúng công bố">
+                                </div>
+                            </div>
+
+                            <div class="col-lg-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Cam kết 3</label>
+                                    <input type="text" name="guarantee_3" class="form-control" value="{{ old('guarantee_3') }}" placeholder="VD: Hỗ trợ bảo hành 1 đổi 1 nếu tài khoản sai mật khẩu">
+                                </div>
+                            </div>
+
+                            <div class="col-lg-12">
+                                <div class="mb-3">
+                                    <label class="form-label">Đoạn giới thiệu ngắn dưới tiêu đề (Lead text)</label>
+                                    <textarea name="custom_lead" class="form-control" rows="2" placeholder="VD: Nhận ngay 1 tài khoản từ hệ thống...">{{ old('custom_lead') }}</textarea>
+                                </div>
+                            </div>
                             <div class="col-lg-12 mt-3">
                                 <button type="submit" class="btn btn-primary me-2">Tạo mới</button>
                                 <a href="{{ route('admin.categories.index') }}" class="btn btn-secondary">Hủy bỏ</a>

@@ -13,9 +13,12 @@ class CardDepositController extends Controller
 {
     public function __construct()
     {
-        if (!config_get('payment.card.active', true)) {
-            abort(403, 'Truy cập không hợp lệ!');
-        }
+        $this->middleware(function ($request, $next) {
+            if (!config_get('payment.card.active', true)) {
+                abort(403, 'Tính năng nạp thẻ cào đang tạm bảo trì!');
+            }
+            return $next($request);
+        })->except(['handleCallback']);
     }
 
     /**
@@ -37,10 +40,10 @@ class CardDepositController extends Controller
             return redirect()->route('profile.deposit-card')
                 ->with('error', 'Bạn có quá nhiều thẻ đang chờ xử lý. Vui lòng đợi!')->withInput();
         }
-        $partnerWeb = 'khothegame.com';
+        $partnerWeb = config_get('partner_website_card') ?: (config_get('payment.card.partner_web') ?: 'cark2k.net');
         try {
-            $partner_id = config_get('payment.card.partner_id', '');
-            $partner_key = config_get('payment.card.partner_key', '');
+            $partner_id = config_get('partner_id_card') ?: (config_get('payment.card.partner_id') ?: '84481765167');
+            $partner_key = config_get('partner_key_card') ?: (config_get('payment.card.partner_key') ?: 'PqeP0rjMARYCxmTPxQwA7yRGMU2DYxvI');
             $request_id = rand(111111111111, 9999999999999);
             $response = Http::withHeaders([
                 'Content-Type' => 'application/json'

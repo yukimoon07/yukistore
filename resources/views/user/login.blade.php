@@ -155,18 +155,22 @@
 
         {{-- 1. Federated sign-in buttons ABOVE sign-in method divider --}}
         <div class="federated-buttons">
-            <a href="{{ route('auth.google') }}" class="social-btn" aria-label="Continue with Google">
+            <a href="{{ route('auth.google') }}" class="social-btn" aria-label="Đăng nhập với Google">
                 <span class="iconify" data-icon="flat-color-icons:google"></span>
-                <span>Continue with Google</span>
+                <span>Đăng nhập với Google</span>
             </a>
-            <a href="javascript:void(0)" onclick="alert('Tính năng đăng nhập với Apple sẽ sớm ra mắt')" class="social-btn" aria-label="Continue with Apple">
-                <span class="iconify" data-icon="ant-design:apple-filled" style="color: #ffffff;"></span>
-                <span>Continue with Apple</span>
+            <a href="{{ route('auth.facebook') }}" class="social-btn" aria-label="Đăng nhập với Facebook">
+                <span class="iconify" data-icon="logos:facebook" style="font-size: 1.15rem;"></span>
+                <span>Đăng nhập với Facebook</span>
             </a>
         </div>
 
         {{-- 2. Sign-in method divider: thin rule with "or" in the middle --}}
-        <div class="auth-divider-or" role="separator" aria-label="Or sign in with email">or</div>
+        <div class="auth-divider-or" role="separator" aria-label="Hoặc đăng nhập bằng tài khoản">Hoặc bằng tài khoản</div>
+
+        @php
+            $loginCaptcha = \App\Helpers\CaptchaHelper::generate('login');
+        @endphp
 
         {{-- 3. Native Form Semantics --}}
         <form method="POST" action="{{ route('login') }}" autocomplete="on" novalidate>
@@ -174,7 +178,7 @@
 
             {{-- Labeled email/username field (<input autocomplete="username">) --}}
             <div class="form-group">
-                <label for="username" class="form-label">Email or Username</label>
+                <label for="username" class="form-label">Tên đăng nhập hoặc Email</label>
                 <input id="username" 
                        type="text" 
                        class="form-input" 
@@ -183,7 +187,7 @@
                        value="{{ old('username') }}" 
                        required 
                        autofocus 
-                       placeholder="name@example.com">
+                       placeholder="Nhập username hoặc email...">
                 @error('username')
                     <span class="form-error" role="alert">{{ $message }}</span>
                 @enderror
@@ -192,7 +196,7 @@
             {{-- Labeled password field (<input type="password" autocomplete="current-password">) with visibility toggle --}}
             <div class="form-group">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                    <label for="password" class="form-label" style="margin-bottom: 0;">Password</label>
+                    <label for="password" class="form-label" style="margin-bottom: 0;">Mật khẩu</label>
                     @if (Route::has('password.request'))
                         <a href="{{ route('password.request') }}" style="font-size: 0.82rem; color: var(--yuki-gold, #E8B33C); text-decoration: none;">Quên mật khẩu?</a>
                     @endif
@@ -216,6 +220,25 @@
                     </button>
                 </div>
                 @error('password')
+                    <span class="form-error" role="alert">{{ $message }}</span>
+                @enderror
+            </div>
+
+            {{-- Captcha --}}
+            <div class="form-group">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                    <label for="captcha" class="form-label" style="margin-bottom: 0;">Mã bảo vệ (Captcha)</label>
+                    <span style="background: rgba(232, 179, 60, 0.15); color: var(--yuki-gold, #E8B33C); padding: 2px 10px; border-radius: 6px; font-weight: 700; font-size: 0.95rem; border: 1px solid rgba(232, 179, 60, 0.3);">
+                        {{ $loginCaptcha['question'] }}
+                    </span>
+                </div>
+                <input id="captcha" 
+                       type="number" 
+                       class="form-input" 
+                       name="captcha" 
+                       required 
+                       placeholder="Nhập kết quả phép tính trên...">
+                @error('captcha')
                     <span class="form-error" role="alert">{{ $message }}</span>
                 @enderror
             </div>

@@ -64,6 +64,20 @@
 
                                 <div class="info-row">
                                     <div class="info-label">
+                                        <i class="fa-solid fa-address-card me-2"></i> Họ và tên
+                                    </div>
+                                    <div class="info-value">{{ $user->name ?: 'Chưa cập nhật' }}</div>
+                                </div>
+
+                                <div class="info-row">
+                                    <div class="info-label">
+                                        <i class="fa-solid fa-phone me-2"></i> Số điện thoại
+                                    </div>
+                                    <div class="info-value">{{ $user->phone ?: 'Chưa cập nhật' }}</div>
+                                </div>
+
+                                <div class="info-row">
+                                    <div class="info-label">
                                         <i class="fa-solid fa-envelope me-2"></i> Email
                                     </div>
                                     <div class="info-value">{{ $user->email }}</div>
@@ -121,6 +135,60 @@
                                         {{ $user->created_at->format('H:i d/m/Y') }}
                                     </div>
                                 </div>
+                            </div>
+                        </div>
+
+                        {{-- Form cập nhật hồ sơ --}}
+                        <div class="profile-info-card mt-4">
+                            <div class="info-header">
+                                <div class="balance-info">
+                                    <span class="balance-label"><i class="fa-solid fa-user-pen me-2"></i> CẬP NHẬT THÔNG TIN HỒ SƠ</span>
+                                </div>
+                            </div>
+                            <div class="info-content" style="margin-top: 10px;">
+                                @if (session('success'))
+                                    <div class="alert alert-success alert-dismissible fade show" role="alert" style="border-radius: 8px; margin-bottom: 20px;">
+                                        <i class="fa-solid fa-circle-check me-2"></i> {{ session('success') }}
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                    </div>
+                                @endif
+
+                                @if ($errors->any())
+                                    <div class="alert alert-danger" style="border-radius: 8px; margin-bottom: 20px;">
+                                        <ul class="mb-0 ps-3">
+                                            @foreach ($errors->all() as $error)
+                                                <li>{{ $error }}</li>
+                                            @endforeach
+                                        </ul>
+                                    </div>
+                                @endif
+
+                                <form action="{{ route('profile.update') }}" method="POST" enctype="multipart/form-data">
+                                    @csrf
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-bold" style="font-size: 0.9rem; color: #475569;">Họ và tên</label>
+                                            <input type="text" name="name" class="form-control" value="{{ old('name', $user->name) }}" placeholder="Nhập họ và tên...">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-bold" style="font-size: 0.9rem; color: #475569;">Số điện thoại</label>
+                                            <input type="text" name="phone" class="form-control" value="{{ old('phone', $user->phone) }}" placeholder="Nhập số điện thoại...">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-bold" style="font-size: 0.9rem; color: #475569;">Email</label>
+                                            <input type="email" name="email" class="form-control" value="{{ old('email', $user->email) }}" placeholder="Nhập địa chỉ email...">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-bold" style="font-size: 0.9rem; color: #475569;">Ảnh đại diện (Avatar)</label>
+                                            <input type="file" name="avatar" class="form-control" accept="image/*">
+                                        </div>
+                                        <div class="col-12 mt-3 text-end">
+                                            <button type="submit" class="btn btn-primary px-4 py-2" style="background: var(--yuki-gold, #E8B33C); border-color: var(--yuki-gold, #E8B33C); color: #000; font-weight: 700; border-radius: 8px;">
+                                                <i class="fa-solid fa-floppy-disk me-1"></i> Lưu thay đổi
+                                            </button>
+                                        </div>
+                                    </div>
+                                </form>
                             </div>
                         </div>
                     </div>

@@ -35,7 +35,8 @@ Route::get('/dieu-khoan-su-dung', [HomeController::class, 'terms'])->name('terms
 Route::get('/chinh-sach-bao-mat', [HomeController::class, 'privacy'])->name('privacy');
 Route::middleware(['auth', 'not-banned'])->group(function () {
     Route::prefix('profile')->name('profile.')->group(function () {
-        Route::get('/', [ProfileController::class, 'index'])->name(name: 'index');
+        Route::get('/', [ProfileController::class, 'index'])->name('index');
+        Route::post('/update', [ProfileController::class, 'updateProfile'])->name('update');
         Route::get('/change-password', [ProfileController::class, 'viewChangePassword'])->name('change-password');
         Route::post('/change-password', [ProfileController::class, 'changePassword'])->name('change-password.update');
 
@@ -75,6 +76,8 @@ Route::middleware(['auth', 'not-banned'])->group(function () {
         });
 
     });
+
+    Route::post('/order-review', [\App\Http\Controllers\User\OrderReviewController::class, 'store'])->name('order-review.store');
     
     // Trả góp
     Route::get('/profile/installments', [\App\Http\Controllers\User\InstallmentController::class, 'index'])->name('profile.installments');

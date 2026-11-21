@@ -56,6 +56,11 @@ class GameCategoryController extends Controller
                 'flash_sale_old_price' => 'nullable|numeric|min:0',
                 'flash_sale_new_price' => 'nullable|numeric|min:0',
                 'flash_sale_end_time' => 'nullable|date',
+                'custom_badge' => 'nullable|string|max:255',
+                'custom_lead' => 'nullable|string',
+                'guarantee_1' => 'nullable|string|max:255',
+                'guarantee_2' => 'nullable|string|max:255',
+                'guarantee_3' => 'nullable|string|max:255',
             ]);
 
             DB::beginTransaction();
@@ -118,6 +123,11 @@ class GameCategoryController extends Controller
                 'flash_sale_old_price' => 'nullable|numeric|min:0',
                 'flash_sale_new_price' => 'nullable|numeric|min:0',
                 'flash_sale_end_time' => 'nullable|date',
+                'custom_badge' => 'nullable|string|max:255',
+                'custom_lead' => 'nullable|string',
+                'guarantee_1' => 'nullable|string|max:255',
+                'guarantee_2' => 'nullable|string|max:255',
+                'guarantee_3' => 'nullable|string|max:255',
             ]);
 
             DB::beginTransaction();

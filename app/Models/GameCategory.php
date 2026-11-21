@@ -20,7 +20,12 @@ class GameCategory extends Model
         'is_flash_sale',
         'flash_sale_old_price',
         'flash_sale_new_price',
-        'flash_sale_end_time'
+        'flash_sale_end_time',
+        'custom_lead',
+        'custom_badge',
+        'guarantee_1',
+        'guarantee_2',
+        'guarantee_3'
     ];
 
     protected $casts = [

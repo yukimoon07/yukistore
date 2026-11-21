@@ -105,10 +105,18 @@
                                                             @endif
                                                         </td>
                                                         <td>
-                                                            <button type="button" class="btn btn-sm btn-info view-details"
-                                                                data-id="{{ $service->id }}">
-                                                                <i class="fa-solid fa-eye"></i>
-                                                            </button>
+                                                            <div class="d-flex gap-1">
+                                                                <button type="button" class="btn btn-sm btn-info view-details"
+                                                                    data-id="{{ $service->id }}" title="Chi tiết">
+                                                                    <i class="fa-solid fa-eye"></i>
+                                                                </button>
+                                                                @if ($service->status === 'completed')
+                                                                    <button type="button" class="btn btn-sm btn-warning review-btn"
+                                                                        onclick="openReviewModal({{ $service->id }}, '{{ addslashes($service->gameService->name ?? 'Dịch vụ') }}')" title="Đánh giá dịch vụ">
+                                                                        <i class="fa-solid fa-star"></i>
+                                                                    </button>
+                                                                @endif
+                                                            </div>
                                                         </td>
                                                     </tr>
                                                 @empty
@@ -263,5 +271,77 @@
             document.getElementById('serviceDetailsModal').style.display = 'none';
             document.body.style.overflow = ''; // Restore scrolling
         }
+
+        function openReviewModal(orderId, serviceName) {
+            document.getElementById('review_order_id').value = orderId;
+            document.getElementById('review_service_name').textContent = serviceName;
+            var modalEl = document.getElementById('reviewModal');
+            if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+                var modal = new bootstrap.Modal(modalEl);
+                modal.show();
+            } else {
+                modalEl.style.display = 'block';
+                modalEl.classList.add('show');
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            var stars = document.querySelectorAll('.star-rate');
+            stars.forEach(function(star) {
+                star.addEventListener('click', function() {
+                    var val = parseInt(this.getAttribute('data-val'));
+                    document.getElementById('review_rating_val').value = val;
+                    stars.forEach(function(s) {
+                        var sVal = parseInt(s.getAttribute('data-val'));
+                        if (sVal <= val) {
+                            s.classList.remove('text-muted');
+                            s.classList.add('text-warning');
+                        } else {
+                            s.classList.remove('text-warning');
+                            s.classList.add('text-muted');
+                        }
+                    });
+                });
+            });
+        });
     </script>
+
+    {{-- Modal Đánh giá dịch vụ --}}
+    <div class="modal fade" id="reviewModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="background: #1e293b; color: #fff; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 14px;">
+                <div class="modal-header" style="border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
+                    <h5 class="modal-title"><i class="fa-solid fa-star text-warning me-2"></i> Đánh giá đơn cày thuê</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" onclick="document.getElementById('reviewModal').style.display='none'" aria-label="Close"></button>
+                </div>
+                <form id="reviewForm" action="{{ route('order-review.store') }}" method="POST">
+                    @csrf
+                    <input type="hidden" name="service_order_id" id="review_order_id">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label text-muted">Dịch vụ:</label>
+                            <div id="review_service_name" class="fw-bold text-white fs-6"></div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-muted">Mức độ hài lòng:</label>
+                            <div class="d-flex gap-2 fs-3 text-warning" id="starRating">
+                                @for($i = 1; $i <= 5; $i++)
+                                    <i class="fa-solid fa-star star-rate" data-val="{{ $i }}" style="cursor: pointer;"></i>
+                                @endfor
+                            </div>
+                            <input type="hidden" name="rating" id="review_rating_val" value="5">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-muted">Nhận xét của bạn:</label>
+                            <textarea name="comment" class="form-control" rows="4" style="background: #0f172a; color: #fff; border-color: #334155;" placeholder="Dịch vụ rất nhanh chóng, uy tín, tài khoản an toàn..." required></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer" style="border-top: 1px solid rgba(255, 255, 255, 0.1);">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" onclick="document.getElementById('reviewModal').style.display='none'">Đóng</button>
+                        <button type="submit" class="btn btn-primary" style="background: var(--yuki-gold, #E8B33C); border-color: var(--yuki-gold, #E8B33C); color: #000; font-weight: 700;">Gửi đánh giá</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 @endpush

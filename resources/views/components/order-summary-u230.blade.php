@@ -3,12 +3,12 @@
     'id' => 'u230-' . uniqid(),
     'items' => null,
     'shipping' => 0,
-    'shippingLabel' => 'Shipping',
+    'shippingLabel' => 'Phí xử lý hệ thống',
     'currency' => 'đ',
-    'title' => 'Order summary',
+    'title' => 'Đơn Cày Thuê',
     'promoCode' => 'WELCOME10',
     'discountPercent' => 10,
-    'buttonText' => 'Pay now',
+    'buttonText' => 'Xác nhận đặt đơn',
     'formId' => null,
     'inputName' => 'giftcode',
     'loginUrl' => null,
@@ -183,36 +183,36 @@
 </style>
 
 <div class="ux u230" id="{{ $id }}">
-  <div class="u230-hd"><b>{{ $title }}</b><span class="u230-cnt">{{ count($displayItems) }} items</span></div>
+  <div class="u230-hd"><b>{{ $title }}</b><span class="u230-cnt">{{ count($displayItems) }} mục</span></div>
   <ul class="u230-ls"></ul>
   <div class="u230-pr">
     <button type="button" class="u230-lk" aria-expanded="false">
       <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 5.5V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1.5a2.5 2.5 0 0 0 0 5V12a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1v-1.5a2.5 2.5 0 0 0 0-5z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M9.5 3.5v9" stroke="currentColor" stroke-width="1.3" stroke-dasharray="1.5 1.5"/></svg>
-      Have a promo code?
+      Bạn có mã giảm giá?
       <svg class="cv" viewBox="0 0 12 12" aria-hidden="true"><path d="M3 4.5l3 3 3-3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </button>
     <div class="u230-ex"><div>
       <div class="u230-rw">
-        <input class="u230-in" aria-label="Promo code" placeholder="Enter code" spellcheck="false" autocomplete="off">
-        <button type="button" class="u230-ap"><span>Apply</span><i aria-hidden="true"></i></button>
+        <input class="u230-in" aria-label="Mã giảm giá" placeholder="Nhập mã giảm giá" spellcheck="false" autocomplete="off">
+        <button type="button" class="u230-ap"><span>Áp dụng</span><i aria-hidden="true"></i></button>
       </div>
       <p class="u230-er" role="alert"></p>
       <span class="u230-cp">
         <svg viewBox="0 0 13 13" aria-hidden="true"><path d="M3 6.8l2.3 2.3L10 4.4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
         <span class="u230-cn"></span>
-        <button type="button" class="u230-rm" aria-label="Remove promo code">
+        <button type="button" class="u230-rm" aria-label="Xóa mã giảm giá">
           <svg viewBox="0 0 10 10" aria-hidden="true"><path d="M2.5 2.5l5 5M7.5 2.5l-5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
         </button>
       </span>
     </div></div>
   </div>
   <div class="u230-sm">
-    <div class="u230-ln"><span>Subtotal</span><span class="u230-sub"></span></div>
+    <div class="u230-ln"><span>Tạm tính</span><span class="u230-sub"></span></div>
     <div class="u230-ln"><span>{{ $shippingLabel }}</span><span class="u230-sh"></span></div>
-    <div class="u230-dc"><div><div class="u230-ln"><span>Discount</span><span class="u230-dv"></span></div></div></div>
+    <div class="u230-dc"><div><div class="u230-ln"><span>Giảm giá</span><span class="u230-dv"></span></div></div></div>
   </div>
   <div class="u230-tt">
-    <div><span>Total</span><span class="u230-sv"></span></div>
+    <div><span>Tổng thanh toán</span><span class="u230-sv"></span></div>
     <div class="u230-tv"><s class="u230-ol"></s><b class="u230-tot" aria-live="polite"></b></div>
   </div>
   <button type="button" class="u230-go"></button>
@@ -274,7 +274,7 @@
     q('.u230-sh').textContent = won(SHIP);
     q('.u230-dv').textContent = '−' + won(cut);
     ol.textContent = won(full);
-    sv.textContent = won(cut) + ' saved';
+    sv.textContent = 'Tiết kiệm ' + won(cut);
     if (!on) {
       shown = full;
       paint(full);
@@ -337,7 +337,7 @@
       ap.classList.remove('is-busy');
       if (code === validPromo.toUpperCase()) {
         on = true;
-        cn.textContent = code + ' · ' + discPercent + '% off';
+        cn.textContent = code + ' · Giảm ' + discPercent + '%';
         root.classList.add('is-on');
         er.classList.remove('is-on');
         if (hiddenInput) hiddenInput.value = code;
@@ -363,7 +363,7 @@
             var savings = data.data && data.data.savings ? Number(data.data.savings) : Math.round(sub * (discPercent / 100));
             cut = savings;
             q('.u230-dv').textContent = '−' + won(cut);
-            sv.textContent = won(cut) + ' saved';
+            sv.textContent = 'Tiết kiệm ' + won(cut);
             cn.textContent = code + ' · Giảm ' + won(cut);
             root.classList.add('is-on');
             er.classList.remove('is-on');
@@ -373,7 +373,7 @@
             inp.classList.remove('is-bad');
             void inp.offsetWidth;
             inp.classList.add('is-bad');
-            er.textContent = (data && data.message) ? data.message : 'This code isn’t valid';
+            er.textContent = (data && data.message) ? data.message : 'Mã giảm giá không hợp lệ hoặc đã hết hạn';
             er.classList.add('is-on');
           }
         })
@@ -381,14 +381,14 @@
           inp.classList.remove('is-bad');
           void inp.offsetWidth;
           inp.classList.add('is-bad');
-          er.textContent = 'This code isn’t valid';
+          er.textContent = 'Mã giảm giá không hợp lệ hoặc đã hết hạn';
           er.classList.add('is-on');
         });
       } else {
         inp.classList.remove('is-bad');
         void inp.offsetWidth;
         inp.classList.add('is-bad');
-        er.textContent = 'This code isn’t valid';
+        er.textContent = 'Mã giảm giá không hợp lệ hoặc đã hết hạn';
         er.classList.add('is-on');
       }
     }, rm ? 0 : 650);

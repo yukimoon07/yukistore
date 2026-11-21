@@ -15,7 +15,8 @@ class GameService extends Model
         'thumbnail',
         'description',
         'type',
-        'active'
+        'active',
+        'is_featured'
     ];
 
     // Quan hệ với các package

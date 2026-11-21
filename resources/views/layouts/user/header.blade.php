@@ -1075,10 +1075,6 @@
             <li><a href="{{ route('news.index') }}" class="nav-link-item"><span class="iconify"
                         data-icon="ant-design:notification-outlined"></span> {{ __('shop.nav_news') }}</a></li>
 
-            <!-- Affiliate Link (Harmonized Color) -->
-            <li><a href="{{ route('profile.affiliate') }}" class="nav-link-item"><span class="iconify"
-                        data-icon="ant-design:link-outlined"></span> {{ __('shop.nav_affiliate') }}</a></li>
-
             @if(Auth::check() && Auth::user()->role === 'admin')
             <li class="mobile-only-admin">
                 <a href="{{ route('admin.index') }}" target="_blank" class="nav-link-item" style="color: #fbbf24 !important; font-weight: 700;">
@@ -1115,6 +1111,11 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Theme Toggle Button (Night / Light) -->
+            <button type="button" class="theme-toggle-btn me-2" id="themeToggleBtn" onclick="toggleSiteTheme()" title="Chuyển đổi giao diện Sáng / Tối" aria-label="Toggle Night/Light Mode" style="display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 50%; background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.15); color: #fbbf24; cursor: pointer; transition: all 0.2s; flex-shrink: 0; padding: 0;">
+                <i class="fa-solid fa-moon" id="themeIcon"></i>
+            </button>
 
             <!-- Deposit Button -->
             <a href="javascript:void(0)" onclick="document.getElementById('depositMethodModal').style.display='flex'" class="btn-deposit-glow" style="background: linear-gradient(135deg, #E8B33C, #C2922A); color: #fff; padding: 7px 14px; border-radius: 20px; font-weight: 700; font-size: 0.82rem; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 14px rgba(232, 179, 60, 0.25); white-space: nowrap; flex-shrink: 0;">
@@ -1407,4 +1408,30 @@
         if (nav) nav.classList.remove('show');
         if (overlay) overlay.classList.remove('show');
     }
+
+    // Theme Switcher Logic
+    function toggleSiteTheme() {
+        var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+        var next = cur === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', next);
+        localStorage.setItem('yuki_theme', next);
+        updateThemeIcon(next);
+    }
+
+    function updateThemeIcon(theme) {
+        var icon = document.getElementById('themeIcon');
+        if (!icon) return;
+        if (theme === 'dark') {
+            icon.className = 'fa-solid fa-moon';
+            icon.style.color = '#fbbf24';
+        } else {
+            icon.className = 'fa-solid fa-sun';
+            icon.style.color = '#f59e0b';
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+        updateThemeIcon(cur);
+    });
 </script>

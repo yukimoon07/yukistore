@@ -19,8 +19,9 @@ class ServiceOrderController extends Controller
         // Validate dữ liệu đầu vào
         $validator = Validator::make($request->all(), [
             'service_id' => 'required|exists:game_services,id',
-            'package_id' => 'required|exists:service_packages,id',
-            'server' => 'nullable|string|max:50',
+            'package_ids' => 'nullable|array|max:3',
+            'package_ids.*' => 'exists:service_packages,id',
+            'package_id' => 'nullable|exists:service_packages,id',
             'game_account' => 'required|string|max:50',
             'game_password' => 'required|string|max:50',
             'note' => 'nullable|string|max:500',
@@ -35,25 +36,55 @@ class ServiceOrderController extends Controller
 
         $user = User::findOrFail(auth()->id());
 
-        // Bắt đầu transaction TRƯỚC khi đọc số dư để chống double submission:
-        // mọi luồng thanh toán (đọc số dư, kiểm tra gói, trừ tiền, ghi lịch sử) nằm trong một transaction.
+        // Bắt đầu transaction TRƯỚC khi đọc số dư để chống double submission
         DB::beginTransaction();
 
         try {
             // Khóa bản ghi user để chặn 2 request cùng lúc đọc số dư cũ
             $user = User::where('id', $user->id)->lockForUpdate()->firstOrFail();
 
-            // Lấy package ĐỒNG THỜI xác nhận package thuộc đúng service được yêu cầu
-            // và đang hoạt động (không chỉ kiểm tra tồn tại độc lập).
-            $package = ServicePackage::where('id', $request->input('package_id'))
-                ->where('game_service_id', $request->input('service_id'))
-                ->where('active', true)
-                ->first();
+            // RÀNG BUỘC: Chỉ được đặt 1 đơn trong lúc cày, sau khi admin xác nhận là cày xong thì mới được đặt tiếp
+            $hasActiveOrder = ServiceHistory::where('user_id', $user->id)
+                ->whereIn('status', ['pending', 'processing'])
+                ->exists();
 
-            if (!$package) {
+            if ($hasActiveOrder) {
                 DB::rollBack();
                 return redirect()->back()
-                    ->with('error', 'Gói dịch vụ không tồn tại hoặc không thuộc dịch vụ này.')
+                    ->with('error', 'Bạn đang có đơn cày thuê đang được xử lý. Vui lòng chờ hoàn tất đơn hiện tại trước khi đặt đơn mới!')
+                    ->withInput();
+            }
+
+            // Xử lý danh sách gói đã chọn (hỗ trợ tối đa 3 gói cày thuê trên 1 đơn)
+            $packageIds = $request->input('package_ids');
+            if (empty($packageIds) && $request->filled('package_id')) {
+                $packageIds = [$request->input('package_id')];
+            }
+
+            if (!is_array($packageIds) || count($packageIds) === 0) {
+                DB::rollBack();
+                return redirect()->back()
+                    ->with('error', 'Vui lòng chọn ít nhất 1 gói cày thuê.')
+                    ->withInput();
+            }
+
+            if (count($packageIds) > 3) {
+                DB::rollBack();
+                return redirect()->back()
+                    ->with('error', 'Chỉ được phép chọn tối đa 3 mục cày thuê cùng 1 lúc trên 1 đơn.')
+                    ->withInput();
+            }
+
+            // Xác nhận các gói thuộc đúng service và đang hoạt động
+            $packages = ServicePackage::whereIn('id', $packageIds)
+                ->where('game_service_id', $request->input('service_id'))
+                ->where('active', true)
+                ->get();
+
+            if ($packages->count() !== count($packageIds)) {
+                DB::rollBack();
+                return redirect()->back()
+                    ->with('error', 'Có gói dịch vụ không hợp lệ hoặc không thuộc dịch vụ này.')
                     ->withInput();
             }
 
@@ -69,16 +100,24 @@ class ServiceOrderController extends Controller
                     ->withInput();
             }
 
-            // Giá phải hợp lệ (> 0). Không cho đặt gói chưa được thiết lập giá.
-            if ($package->price === null || (int) $package->price < 0) {
-                DB::rollBack();
-                return redirect()->back()
-                    ->with('error', 'Gói dịch vụ này chưa có giá hợp lệ. Vui lòng liên hệ quản trị viên.')
-                    ->withInput();
+            // Tính tổng tiền các gói
+            $totalOriginalPrice = 0;
+            $packageNames = [];
+            foreach ($packages as $pkg) {
+                if ($pkg->price === null || (int) $pkg->price < 0) {
+                    DB::rollBack();
+                    return redirect()->back()
+                        ->with('error', "Gói '{$pkg->name}' chưa có giá hợp lệ. Vui lòng liên hệ quản trị viên.")
+                        ->withInput();
+                }
+                $totalOriginalPrice += (int) $pkg->price;
+                $packageNames[] = $pkg->name;
             }
 
+            $packageNamesStr = implode(' · ', $packageNames);
+
             // Xử lý mã giảm giá
-            $finalPrice = (int) $package->price;
+            $finalPrice = $totalOriginalPrice;
             $discountAmount = 0;
             $discountCode = null;
 
@@ -105,22 +144,38 @@ class ServiceOrderController extends Controller
             if ($user->balance < $finalPrice) {
                 DB::rollBack();
                 return redirect()->back()
-                    ->with('error', 'Số dư tài khoản không đủ để thanh toán dịch vụ này.')
+                    ->with('error', 'Số dư tài khoản không đủ để thanh toán đơn cày thuê này. Vui lòng nạp thêm tiền!')
                     ->withInput();
             }
 
+            // Ghi chú chi tiết gói & tài khoản
+            $userNote = trim((string) $request->input('note'));
+            $fullNote = count($packages) > 1 ? "Gói cày: [{$packageNamesStr}]" : "Gói: {$packageNamesStr}";
+            if ($userNote !== '') {
+                $fullNote .= " | Ghi chú: {$userNote}";
+            }
+
             // Tạo lịch sử dịch vụ
-            $serviceHistory = ServiceHistory::create([
+            $serviceHistoryData = [
                 'user_id' => $user->id,
                 'game_service_id' => $service->id,
-                'service_package_id' => $package->id,
+                'service_package_id' => $packages->first()->id,
                 'game_account' => $request->input('game_account'),
                 'game_password' => $request->input('game_password'),
-                'server' => $request->input('server') ?: 'Mặc định',
-                'note' => $request->input('note'),
+                'server' => 0, // Đã xóa mục Máy chủ theo yêu cầu của bạn
+                'amount' => count($packages),
                 'price' => $finalPrice,
+                'discount_code' => $discountCode ? $discountCode->code : null,
+                'discount_amount' => $discountAmount,
                 'status' => 'pending',
-            ]);
+                'admin_note' => $fullNote,
+            ];
+
+            if (\Illuminate\Support\Facades\Schema::hasColumn('service_histories', 'package_names')) {
+                $serviceHistoryData['package_names'] = $packageNamesStr;
+            }
+
+            $serviceHistory = ServiceHistory::create($serviceHistoryData);
 
             // Trừ tiền tài khoản
             $balanceBefore = $user->balance;
@@ -137,7 +192,7 @@ class ServiceOrderController extends Controller
                 'amount' => -$finalPrice,
                 'balance_before' => $balanceBefore,
                 'balance_after' => $balanceAfter,
-                'description' => 'Thuê ' . $service->name . ' #' . $serviceHistory->id .
+                'description' => 'Thuê ' . $service->name . ' (' . $packageNamesStr . ') #' . $serviceHistory->id .
                     ($discountAmount > 0 ? ' (Giảm giá: ' . number_format($discountAmount) . 'đ)' : ''),
                 'reference_id' => $serviceHistory->id
             ]);

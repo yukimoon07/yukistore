@@ -74,7 +74,11 @@
         }
     </style>
     <script>
-        window.__defaultTheme = 'dark';
+        (function() {
+            var savedTheme = localStorage.getItem('yuki_theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            window.__defaultTheme = savedTheme;
+        })();
     </script>
     @if (request()->is('/'))
         <script type="application/ld+json">
