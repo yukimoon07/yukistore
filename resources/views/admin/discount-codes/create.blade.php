@@ -103,6 +103,25 @@
                                     @enderror
                                 </div>
                             </div>
+
+                            <div class="col-12 mb-3">
+                                <x-multi-select-listbox 
+                                    id="adminDiscountCategoriesSelect"
+                                    name="applicable_categories"
+                                    label="Danh mục cụ thể áp dụng mã (Multi-Select Listbox):"
+                                    placeholder="Chọn các danh mục game..."
+                                    :options="[
+                                        ['value' => 'lien-quan', 'label' => 'Liên Quân Mobile'],
+                                        ['value' => 'blox-fruits', 'label' => 'Blox Fruits (Roblox)'],
+                                        ['value' => 'genshin', 'label' => 'Genshin Impact'],
+                                        ['value' => 'fc-online', 'label' => 'FC Online'],
+                                        ['value' => 'fc-mobile', 'label' => 'FC Mobile'],
+                                        ['value' => 'valorant', 'label' => 'Valorant'],
+                                        ['value' => 'arknights', 'label' => 'Arknights: Endfield'],
+                                        ['value' => 'random-box', 'label' => 'Túi Mù & Vận May'],
+                                    ]"
+                                />
+                            </div>
                             <div class="col-lg-6 col-sm-6 col-12">
                                 <div class="mb-3">
                                     <label class="form-label">Lượt sử dụng tối đa <span class="text-muted">(Để trống = Không giới hạn)</span></label>

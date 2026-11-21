@@ -135,6 +135,11 @@ Route::get('/star-rating', function () {
     return view('user.star-rating-preview');
 })->name('star-rating.preview');
 
+// Multi-select & Ant Transfer preview
+Route::get('/pickers', function () {
+    return view('user.pickers-preview');
+})->name('pickers.preview');
+
 // Chức năng kiếm tiền đã tắt - chuyển hướng về trang chủ
 Route::any('/nhiem-vu/{any?}', function () {
     return redirect('/');

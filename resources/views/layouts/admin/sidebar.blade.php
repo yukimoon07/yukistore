@@ -199,6 +199,13 @@
                         <span class="pc-mtext">Bảo mật hai lớp (2FA)</span>
                     </a>
                 </li>
+
+                <li class="pc-item {{ request()->routeIs('admin.components.pickers') ? 'active' : '' }}">
+                    <a href="{{ route('admin.components.pickers') }}" class="pc-link">
+                        <span class="pc-micon"><i class="ti ti-select"></i></span>
+                        <span class="pc-mtext">Bộ chọn đa năng (Pickers)</span>
+                    </a>
+                </li>
             </ul>
         </div>
     </div>

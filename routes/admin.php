@@ -275,5 +275,12 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->name('admin.')->group(fun
         Route::get('/', [\App\Http\Controllers\Admin\ActivityLogController::class, 'index'])->name('index');
     });
 
+    // ===== Bộ chọn đa năng: Multi-Select Listbox & Ant Transfer =====
+    Route::get('components/pickers', function () {
+        return view('admin.components.pickers', [
+            'title' => 'Bộ chọn dữ liệu (Multi-Select & Ant Transfer)',
+        ]);
+    })->name('components.pickers');
+
 });
 
