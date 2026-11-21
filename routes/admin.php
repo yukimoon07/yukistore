@@ -57,6 +57,11 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->name('admin.')->group(fun
         \Illuminate\Support\Facades\Artisan::call('view:clear');
         return redirect()->back()->with('success', 'Đã xóa toàn bộ cache hệ thống thành công!');
     })->name('clear-cache');
+    Route::get('/run-migration', function () {
+        \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
+        $output = \Illuminate\Support\Facades\Artisan::output();
+        return redirect()->back()->with('success', 'Chạy migration thành công: ' . $output);
+    })->name('run-migration');
     Route::get('/affiliates', [AffiliateController::class, 'index'])->name('affiliates.index');
     Route::prefix('users')->name('users.')->group(function () {
         Route::get('/', [UserController::class, 'index'])->name('index');
