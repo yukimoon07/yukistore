@@ -35,7 +35,25 @@
     </div>
 
     <!-- Component Presentation Arena -->
-    <div id="previewContainer" style="display: flex; justify-content: center; align-items: center; padding: 40px 20px; border-radius: 24px; background: rgba(11, 15, 25, 0.6); border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: 0 20px 48px rgba(0,0,0,0.5); min-height: 540px; transition: background 0.3s ease;">
+    <div id="previewContainer" style="display: flex; flex-direction: column; align-items: center; gap: 32px; padding: 40px 20px; border-radius: 24px; background: rgba(11, 15, 25, 0.6); border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: 0 20px 48px rgba(0,0,0,0.5); min-height: 540px; transition: background 0.3s ease;">
+        
+        <!-- Steps Indicator for Checkout (Material UI / Ant Design Steps) -->
+        <div style="width: 100%; max-width: 640px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; font-size: 0.85rem; color: #94a3b8;">
+                <span style="font-weight: 700; color: #f8fafc;"><i class="fa-solid fa-list-ol"></i> Checkout Steps Indicator</span>
+                <div style="display: flex; gap: 6px;">
+                    <button type="button" onclick="changeDemoStep(0)" style="padding: 3px 8px; border-radius: 6px; font-size: 0.75rem; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.06); color:#fff; cursor:pointer;">Step 0</button>
+                    <button type="button" onclick="changeDemoStep(1)" style="padding: 3px 8px; border-radius: 6px; font-size: 0.75rem; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.06); color:#fff; cursor:pointer;">Step 1</button>
+                    <button type="button" onclick="changeDemoStep(2)" style="padding: 3px 8px; border-radius: 6px; font-size: 0.75rem; border: 1px solid rgba(232,179,60,0.4); background: rgba(232,179,60,0.15); color:var(--yuki-gold, #E8B33C); font-weight:700; cursor:pointer;">Step 2 (Payment)</button>
+                    <button type="button" onclick="changeDemoStep(3)" style="padding: 3px 8px; border-radius: 6px; font-size: 0.75rem; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.06); color:#fff; cursor:pointer;">Step 3</button>
+                </div>
+            </div>
+            <x-checkout-stepper 
+                id="previewCheckoutStepper"
+                :activeStep="2"
+            />
+        </div>
+
         <x-order-summary-u230 
             id="orderSummaryDemo"
             title="Order summary"
@@ -69,6 +87,13 @@
 </div>
 
 <script>
+    function changeDemoStep(step) {
+        var stepper = document.getElementById('previewCheckoutStepper');
+        if (stepper && typeof stepper.setActiveStep === 'function') {
+            stepper.setActiveStep(step);
+        }
+    }
+
     function setPreviewTheme(theme) {
         var container = document.getElementById('previewContainer');
         var comp = document.getElementById('orderSummaryDemo');

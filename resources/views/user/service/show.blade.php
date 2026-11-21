@@ -116,22 +116,18 @@
                     </p>
                 </div>
 
-                <!-- Process Stepper Indicator -->
-                <div class="service-stepper">
-                    <div class="stepper-step active" id="step-1">
-                        <span class="stepper-num">1</span>
-                        <span>Chọn gói</span>
-                    </div>
-                    <span class="stepper-arrow"><i class="fa-solid fa-chevron-right"></i></span>
-                    <div class="stepper-step" id="step-2">
-                        <span class="stepper-num">2</span>
-                        <span>Thông tin game</span>
-                    </div>
-                    <span class="stepper-arrow"><i class="fa-solid fa-chevron-right"></i></span>
-                    <div class="stepper-step" id="step-3">
-                        <span class="stepper-num">3</span>
-                        <span>Theo dõi đơn</span>
-                    </div>
+                <!-- Steps Indicator for Checkout (Material UI / Ant Design Steps) -->
+                <div style="flex: 1; max-width: 580px; min-width: 300px;">
+                    <x-checkout-stepper 
+                        id="serviceCheckoutStepper"
+                        :activeStep="2"
+                        :steps="[
+                            ['title' => 'Chọn gói', 'desc' => 'Dịch vụ'],
+                            ['title' => 'Thông tin', 'desc' => 'Tài khoản'],
+                            ['title' => 'Thanh toán', 'desc' => 'Payment'],
+                            ['title' => 'Hoàn tất', 'desc' => 'Bàn giao'],
+                        ]"
+                    />
                 </div>
             </header>
 
@@ -361,7 +357,12 @@
         }
 
         // Stepper state
-        document.getElementById('step-2').classList.add('active');
+        var stepper = document.getElementById('serviceCheckoutStepper');
+        if (stepper && typeof stepper.setActiveStep === 'function') {
+            stepper.setActiveStep(2);
+        }
+        var oldStep = document.getElementById('step-2');
+        if (oldStep) oldStep.classList.add('active');
     }
 
     function togglePasswordVisibility() {
