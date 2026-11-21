@@ -5,49 +5,127 @@
 @section('content')
     <x-hero-header title="{{ mb_strtoupper($category->name, 'UTF-8') }}" description="" />
 
-    <section class="yk-section">
+    <section class="yk-section" style="padding-top: 24px; padding-bottom: 60px;">
         <div class="container">
+            <!-- Breadcrumb Navigation -->
+            <nav class="gaming-breadcrumb" aria-label="Breadcrumb" style="margin-bottom: 20px;">
+                <a href="/"><i class="fa-solid fa-house"></i> {{ __('shop.nav_home') }}</a>
+                <span class="gaming-breadcrumb-sep">/</span>
+                <a href="{{ route('random.show-all') }}">{{ __('shop.nav_random_categories') ?? 'Danh Mục Random' }}</a>
+                <span class="gaming-breadcrumb-sep">/</span>
+                <span class="gaming-breadcrumb-current">{{ $category->name }}</span>
+            </nav>
+
             @if($category->description)
-            <div class="yk-card yk-card--desc">
+            <div class="yk-card yk-card--desc" style="margin-bottom: 24px; background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 14px; padding: 18px 24px; font-size: 0.95rem; line-height: 1.6; color: #cbd5e1;">
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px; color: var(--yuki-gold, #E8B33C); font-weight: 700; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.05em;">
+                    <i class="fa-solid fa-circle-info"></i> Giới thiệu danh mục
+                </div>
                 {!! nl2br(e($category->description)) !!}
             </div>
             @endif
 
-            <div class="yk-card yk-buy">
-                <div class="yk-buy__media">
-                    <img src="{{ $category->thumbnail ?: asset('img/logo.svg') }}" alt="{{ $category->name }}" width="520" height="293">
-                </div>
-                <div class="yk-buy__info">
-                    <h2 class="yk-buy__title">Mua tài khoản ngẫu nhiên</h2>
-                    <p class="yk-buy__text">
-                        Bạn nhận được 1 tài khoản ngẫu nhiên từ danh mục <strong>{{ $category->name }}</strong>.
-                        Giao acc tự động ngay sau thanh toán.
-                    </p>
+            <div class="yk-card yk-buy-hero">
+                {{-- Left: Large Prominent Media Frame with Ambient Backdrop Blur & Crisp Contain Image --}}
+                <div class="yk-buy__media-frame" onclick="openImageModal('{{ $category->thumbnail ?: asset('img/logo.svg') }}', '{{ addslashes($category->name) }}')">
+                    {{-- Ambient blur layer filling the frame seamlessly --}}
+                    <div class="yk-buy__media-blur" style="background-image: url('{{ $category->thumbnail ?: asset('img/logo.svg') }}');"></div>
+                    
+                    {{-- High-definition Crisp Image: object-fit contain ensures 100% of banner & text is accommodated without cropping --}}
+                    <img src="{{ $category->thumbnail ?: asset('img/logo.svg') }}" 
+                         alt="{{ $category->name }}" 
+                         class="yk-buy__media-img"
+                         loading="eager">
 
-                    <div class="yk-buy__stats">
-                        <div class="yk-buy__stat">
-                            <span class="yk-buy__stat-label">Còn lại</span>
-                            <span class="yk-buy__stat-value yk-buy__stat-value--ok">{{ number_format($availableCount) }} acc</span>
+                    {{-- Badges / Overlays --}}
+                    <div class="yk-buy__media-overlay">
+                        <span class="yk-buy__badge">
+                            <i class="fa-solid fa-dice" style="color: #fbbf24;"></i>
+                            <span>{{ str_contains(strtolower($category->slug), 'tui-mu') ? 'TÚI MÙ MAY MẮN' : 'THỬ VẬN MAY' }}</span>
+                        </span>
+                        
+                        <button type="button" class="yk-buy__zoom-btn" title="Phóng to ảnh xem chi tiết" aria-label="Phóng to ảnh">
+                            <i class="fa-solid fa-maximize"></i>
+                        </button>
+                    </div>
+                </div>
+
+                {{-- Right: Information & Purchase Column --}}
+                <div class="yk-buy__content">
+                    <div class="yk-buy__header">
+                        <div class="yk-buy__pill">
+                            <i class="fa-solid fa-shield-halved"></i> Giao dịch tự động 100%
                         </div>
-                        <div class="yk-buy__stat">
-                            <span class="yk-buy__stat-label">Giá</span>
-                            <span class="yk-price-now">{{ number_format($price) }} đ</span>
+                        <h1 class="yk-buy__heading">{{ $category->name }}</h1>
+                        <p class="yk-buy__lead">
+                            Nhận ngay 1 tài khoản ngẫu nhiên từ hệ thống. Thông tin đăng nhập hiển thị ngay trên màn hình và lưu vĩnh viễn trong mục <em>Lịch sử mua tài khoản</em>.
+                        </p>
+                    </div>
+
+                    {{-- Stats Grid (Còn lại / Giá bán) --}}
+                    <div class="yk-buy__stats-grid">
+                        <div class="yk-buy__stat-card">
+                            <div class="yk-buy__stat-label">
+                                <i class="fa-solid fa-boxes-stacked" style="color: #38bdf8;"></i> Trạng thái kho
+                            </div>
+                            <div class="yk-buy__stat-val {{ $availableCount > 0 ? 'yk-buy__stat-val--avail' : 'yk-buy__stat-val--empty' }}">
+                                {{ number_format($availableCount) }} <span style="font-size: 0.85rem; font-weight: 500; color: #94a3b8;">tài khoản</span>
+                            </div>
+                        </div>
+
+                        <div class="yk-buy__stat-card">
+                            <div class="yk-buy__stat-label">
+                                <i class="fa-solid fa-tag" style="color: var(--yuki-gold, #E8B33C);"></i> Giá niêm yết
+                            </div>
+                            <div class="yk-buy__stat-price">
+                                {{ number_format($price) }} <span style="font-size: 0.95rem; font-weight: 600;">đ</span>
+                            </div>
                         </div>
                     </div>
 
+                    {{-- Trust Guarantees List --}}
+                    <div class="yk-buy__guarantees">
+                        <div class="yk-buy__guarantee-item">
+                            <i class="fa-solid fa-bolt-lightning" style="color: var(--yuki-gold, #E8B33C);"></i>
+                            <span>Giao tài khoản tự động 24/7 chỉ trong 3 giây</span>
+                        </div>
+                        <div class="yk-buy__guarantee-item">
+                            <i class="fa-solid fa-circle-check" style="color: #10b981;"></i>
+                            <span>Cam kết chuẩn thông tin & tỉ lệ trúng đúng công bố</span>
+                        </div>
+                        <div class="yk-buy__guarantee-item">
+                            <i class="fa-solid fa-rotate-left" style="color: #60a5fa;"></i>
+                            <span>Hỗ trợ bảo hành 1 đổi 1 nếu tài khoản sai mật khẩu</span>
+                        </div>
+                    </div>
+
+                    {{-- Actions Button --}}
                     <div class="yk-buy__actions">
                         @if($availableCount > 0)
-                            <button type="button" class="yk-btn yk-btn--primary yk-btn--lg" onclick="openPurchaseModal()">
-                                <i class="fa-solid fa-gift" aria-hidden="true"></i> Mua ngẫu nhiên
+                            <button type="button" class="yk-btn-hero-purchase" onclick="openPurchaseModal()">
+                                <i class="fa-solid fa-gift"></i>
+                                <span>MUA NGẪU NHIÊN NGAY</span>
                             </button>
                         @else
-                            <button type="button" class="yk-btn yk-btn--ghost yk-btn--lg" disabled>Đã hết hàng</button>
+                            <button type="button" class="yk-btn-hero-purchase disabled" disabled>
+                                <i class="fa-solid fa-ban"></i>
+                                <span>TẠM HẾT HÀNG TRONG KHO</span>
+                            </button>
                         @endif
                     </div>
                 </div>
             </div>
         </div>
     </section>
+
+    <!-- Full-Size Image Preview Lightbox Modal -->
+    <div id="imageLightboxModal" class="yk-lightbox-modal" onclick="closeImageModal()" style="display: none;">
+        <button type="button" class="yk-lightbox-close" onclick="closeImageModal()" aria-label="Đóng">&times;</button>
+        <div class="yk-lightbox-content" onclick="event.stopPropagation()">
+            <img id="lightboxImg" src="" alt="Full view">
+            <div id="lightboxCaption" class="yk-lightbox-caption"></div>
+        </div>
+    </div>
 
     <!-- Modal Mua Hàng -->
     <div id="randomPurchaseModal" class="yk-modal" role="dialog" aria-modal="true" aria-labelledby="randomPurchaseTitle">
@@ -59,7 +137,7 @@
 
             <div class="yk-modal__body">
                 <div class="yk-picks">
-                    <img src="{{ $category->thumbnail ?: asset('img/favicon.svg') }}" alt="" width="60" height="60">
+                    <img src="{{ $category->thumbnail ?: asset('img/favicon.svg') }}" alt="" width="88" height="52">
                     <div>
                         <h4 class="yk-picks__name">{{ $category->name }}</h4>
                         <div class="yk-picks__meta">
@@ -102,27 +180,319 @@
     </div>
 
     <style>
-        .yk-card--desc { margin-bottom: var(--space-4); color: var(--yuki-text-soft); }
-        .yk-card--desc :last-child { margin-bottom: 0; }
+        /* Hero Card Layout */
+        .yk-buy-hero {
+            display: grid;
+            grid-template-columns: minmax(360px, 520px) 1fr;
+            gap: 36px;
+            padding: 32px;
+            background: linear-gradient(145deg, #0d1527, #070a12);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            box-shadow: 0 20px 48px rgba(0, 0, 0, 0.6);
+            align-items: start;
+        }
 
-        .yk-buy { display: flex; flex-wrap: wrap; gap: var(--space-5); padding: var(--space-5); }
-        .yk-buy__media { flex: 0 0 auto; width: 300px; max-width: 100%; }
-        .yk-buy__media img { width: 100%; border-radius: var(--radius-card); border: 1px solid var(--yuki-line); object-fit: cover; aspect-ratio: 16/9; }
-        .yk-buy__info { flex: 1 1 280px; min-width: 0; display: flex; flex-direction: column; }
-        .yk-buy__title { font: var(--font-h3); margin: 0 0 var(--space-2); }
-        .yk-buy__text { color: var(--yuki-text-muted); font: var(--font-caption); }
-        .yk-buy__stats { display: flex; gap: var(--space-8); margin: var(--space-4) 0; flex-wrap: wrap; }
-        .yk-buy__stat { display: flex; flex-direction: column; gap: 2px; }
-        .yk-buy__stat-label { font: var(--font-caption); color: var(--yuki-text-muted); }
-        .yk-buy__stat-value--ok { color: var(--yuki-success); font-weight: 600; }
-        .yk-buy__actions { margin-top: auto; }
+        @media (max-width: 991px) {
+            .yk-buy-hero {
+                grid-template-columns: 1fr;
+                gap: 24px;
+                padding: 20px;
+            }
+        }
 
-        .yk-picks { display: flex; gap: var(--space-3); padding: var(--space-3); margin-bottom: var(--space-4); border: 1px solid var(--yuki-line); border-radius: var(--radius-card); background: var(--yuki-ink-850); }
-        .yk-picks img { width: 60px; height: 60px; border-radius: var(--radius-sm); object-fit: cover; flex-shrink: 0; }
-        .yk-picks__name { margin: 0 0 2px; font-size: var(--text-base); font-weight: 600; }
-        .yk-picks__meta { font: var(--font-caption); color: var(--yuki-text-muted); }
-        .yk-picks__price { color: var(--yuki-gold); font-weight: 600; font-variant-numeric: tabular-nums; }
+        /* Large Prominent Media Frame */
+        .yk-buy__media-frame {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            background: #060911;
+            border: 1.5px solid rgba(232, 179, 60, 0.35);
+            border-radius: 16px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 16px 36px rgba(0, 0, 0, 0.6), 0 0 24px rgba(232, 179, 60, 0.12);
+            cursor: pointer;
+            transition: transform 300ms ease, border-color 300ms ease, box-shadow 300ms ease;
+            align-self: flex-start;
+        }
 
+        .yk-buy__media-frame:hover {
+            border-color: var(--yuki-gold, #E8B33C);
+            box-shadow: 0 20px 44px rgba(0, 0, 0, 0.7), 0 0 30px rgba(232, 179, 60, 0.25);
+            transform: translateY(-2px);
+        }
+
+        /* Ambient Blur Backdrop Layer */
+        .yk-buy__media-blur {
+            position: absolute;
+            inset: -14px;
+            background-size: cover;
+            background-position: center;
+            filter: blur(28px) brightness(0.35) saturate(1.4);
+            transform: scale(1.1);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* Main Image: Sharp, Crisp, 100% Contained, Never Cropped */
+        .yk-buy__media-img {
+            position: relative;
+            z-index: 2;
+            width: 100%;
+            height: 100%;
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            display: block;
+            border-radius: 12px;
+            image-rendering: -webkit-optimize-contrast;
+            image-rendering: crisp-edges;
+            transition: transform 350ms cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .yk-buy__media-frame:hover .yk-buy__media-img {
+            transform: scale(1.02);
+        }
+
+        /* Overlays & Controls */
+        .yk-buy__media-overlay {
+            position: absolute;
+            inset: 0;
+            z-index: 3;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding: 12px;
+            pointer-events: none;
+        }
+
+        .yk-buy__badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            background: rgba(11, 15, 25, 0.85);
+            border: 1px solid rgba(232, 179, 60, 0.45);
+            color: var(--yuki-gold, #E8B33C);
+            font-size: 0.78rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            backdrop-filter: blur(6px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+        }
+
+        .yk-buy__zoom-btn {
+            pointer-events: auto;
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: rgba(11, 15, 25, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            backdrop-filter: blur(6px);
+            font-size: 0.9rem;
+            transition: all 200ms ease;
+        }
+
+        .yk-buy__zoom-btn:hover {
+            background: var(--yuki-gold, #E8B33C);
+            color: #0b0f19;
+            border-color: var(--yuki-gold, #E8B33C);
+            transform: scale(1.08);
+        }
+
+        /* Right Content Column */
+        .yk-buy__content {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .yk-buy__pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            border-radius: 20px;
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid rgba(16, 185, 129, 0.35);
+            color: #34d399;
+            font-size: 0.8rem;
+            font-weight: 600;
+            width: fit-content;
+            margin-bottom: 8px;
+        }
+
+        .yk-buy__heading {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.85rem;
+            font-weight: 700;
+            color: #f8fafc;
+            line-height: 1.25;
+            margin: 0;
+            letter-spacing: -0.01em;
+        }
+
+        .yk-buy__lead {
+            color: #94a3b8;
+            font-size: 0.92rem;
+            line-height: 1.6;
+            margin: 0;
+        }
+
+        /* Stats Grid */
+        .yk-buy__stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 14px;
+        }
+
+        .yk-buy__stat-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 14px 16px;
+        }
+
+        .yk-buy__stat-label {
+            font-size: 0.8rem;
+            color: #94a3b8;
+            font-weight: 600;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .yk-buy__stat-val {
+            font-size: 1.35rem;
+            font-weight: 700;
+            color: #f8fafc;
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        .yk-buy__stat-val--avail {
+            color: #34d399;
+        }
+
+        .yk-buy__stat-val--empty {
+            color: #f87171;
+        }
+
+        .yk-buy__stat-price {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.65rem;
+            font-weight: 800;
+            color: var(--yuki-gold, #E8B33C);
+            line-height: 1.1;
+        }
+
+        /* Guarantees List */
+        .yk-buy__guarantees {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding: 12px 16px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .yk-buy__guarantee-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.86rem;
+            color: #cbd5e1;
+        }
+
+        /* Hero Purchase Button */
+        .yk-btn-hero-purchase {
+            width: 100%;
+            padding: 16px 28px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #E8B33C 0%, #C2922A 100%);
+            border: none;
+            color: #0b0f19;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 800;
+            letter-spacing: 0.02em;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            cursor: pointer;
+            box-shadow: 0 8px 24px rgba(232, 179, 60, 0.35);
+            transition: all 250ms ease;
+        }
+
+        .yk-btn-hero-purchase:hover:not(:disabled) {
+            transform: translateY(-2px);
+            filter: brightness(1.08);
+            box-shadow: 0 12px 30px rgba(232, 179, 60, 0.5);
+        }
+
+        .yk-btn-hero-purchase:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        .yk-btn-hero-purchase.disabled,
+        .yk-btn-hero-purchase:disabled {
+            background: rgba(255, 255, 255, 0.08);
+            color: #64748b;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: none;
+            cursor: not-allowed;
+        }
+
+        /* Modal picks */
+        .yk-picks {
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+            padding: var(--space-3);
+            margin-bottom: var(--space-4);
+            border: 1px solid var(--yuki-line);
+            border-radius: var(--radius-card);
+            background: var(--yuki-ink-850);
+        }
+        .yk-picks img {
+            width: 88px;
+            height: 52px;
+            border-radius: 8px;
+            object-fit: contain;
+            background: #060911;
+            border: 1px solid rgba(232, 179, 60, 0.3);
+            flex-shrink: 0;
+            image-rendering: -webkit-optimize-contrast;
+            image-rendering: crisp-edges;
+        }
+        .yk-picks__name {
+            margin: 0 0 4px;
+            font-size: var(--text-base);
+            font-weight: 600;
+            color: #f8fafc;
+        }
+        .yk-picks__meta {
+            font: var(--font-caption);
+            color: var(--yuki-text-muted);
+        }
+        .yk-picks__price {
+            color: var(--yuki-gold);
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* Qty and fields */
         .yk-qty { margin-bottom: var(--space-4); }
         .yk-qty__label { display: block; font: var(--font-caption); font-weight: 600; color: var(--yuki-text-soft); margin-bottom: var(--space-2); }
         .yk-qty__controls { display: flex; gap: var(--space-2); }
@@ -140,6 +510,69 @@
 
         #randomPurchaseModal { display: none; }
         #randomPurchaseModal[style*="flex"] { display: flex; align-items: center; justify-content: center; }
+
+        /* Lightbox Full-Size Image Preview Modal */
+        .yk-lightbox-modal {
+            position: fixed;
+            inset: 0;
+            z-index: 99999;
+            background: rgba(0, 0, 0, 0.88);
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            animation: ykFadeIn 200ms ease;
+        }
+        @keyframes ykFadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .yk-lightbox-close {
+            position: absolute;
+            top: 20px;
+            right: 24px;
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            color: #fff;
+            font-size: 28px;
+            line-height: 1;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 150ms ease;
+            z-index: 2;
+        }
+        .yk-lightbox-close:hover {
+            background: rgba(239, 68, 68, 0.8);
+            border-color: #ef4444;
+        }
+        .yk-lightbox-content {
+            max-width: 90vw;
+            max-height: 85vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+        .yk-lightbox-content img {
+            max-width: 100%;
+            max-height: 80vh;
+            object-fit: contain;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.15);
+        }
+        .yk-lightbox-caption {
+            margin-top: 14px;
+            color: #f8fafc;
+            font-weight: 600;
+            font-size: 1rem;
+            text-align: center;
+        }
     </style>
 @endsection
 
@@ -148,16 +581,42 @@
     const unitPrice = {{ $price }};
     const maxQty = {{ $availableCount }};
     
+    // Lightbox image functions
+    function openImageModal(imgSrc, title) {
+        var modal = document.getElementById('imageLightboxModal');
+        var img = document.getElementById('lightboxImg');
+        var caption = document.getElementById('lightboxCaption');
+        if (modal && img) {
+            img.src = imgSrc;
+            if (caption) caption.innerText = title || '';
+            modal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+    }
+
+    function closeImageModal() {
+        var modal = document.getElementById('imageLightboxModal');
+        if (modal) {
+            modal.style.display = 'none';
+            document.body.style.overflow = '';
+        }
+    }
+
+    // Purchase Modal functions
     function openPurchaseModal() {
         @auth
             document.getElementById('randomPurchaseModal').style.display = 'flex';
             // Initialize discount handler
             initDiscountHandler('random_account', {{ $category->id }}, unitPrice);
         @else
-            FuiToast.error("Vui lòng đăng nhập để mua hàng!");
+            if (typeof FuiToast !== 'undefined') {
+                FuiToast.error("Vui lòng đăng nhập để mua hàng!");
+            } else {
+                alert("Vui lòng đăng nhập để mua hàng!");
+            }
             setTimeout(() => {
                 window.location.href = "{{ route('login') }}";
-            }, 1500);
+            }, 1200);
         @endauth
     }
 
@@ -204,7 +663,11 @@
         const discountCode = document.getElementById('discountCode').value.trim();
 
         if (qty < 1 || qty > maxQty) {
-            FuiToast.error("Số lượng không hợp lệ!");
+            if (typeof FuiToast !== 'undefined') {
+                FuiToast.error("Số lượng không hợp lệ!");
+            } else {
+                alert("Số lượng không hợp lệ!");
+            }
             return;
         }
         
@@ -230,22 +693,42 @@
         .then(res => res.json())
         .then(data => {
             if (data.success) {
-                FuiToast.success(data.message);
+                if (typeof FuiToast !== 'undefined') {
+                    FuiToast.success(data.message);
+                } else {
+                    alert(data.message);
+                }
                 setTimeout(() => {
                     window.location.href = data.redirect_url;
                 }, 1500);
             } else {
-                FuiToast.error(data.message);
+                if (typeof FuiToast !== 'undefined') {
+                    FuiToast.error(data.message);
+                } else {
+                    alert(data.message);
+                }
                 btn.disabled = false;
                 btn.innerText = 'Xác nhận mua';
             }
         })
         .catch(err => {
             console.error(err);
-            FuiToast.error("Có lỗi xảy ra, vui lòng thử lại sau.");
+            if (typeof FuiToast !== 'undefined') {
+                FuiToast.error("Có lỗi xảy ra, vui lòng thử lại sau.");
+            } else {
+                alert("Có lỗi xảy ra, vui lòng thử lại sau.");
+            }
             btn.disabled = false;
             btn.innerText = 'Xác nhận mua';
         });
     }
+
+    // Escape listener
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeImageModal();
+            closePurchaseModal();
+        }
+    });
 </script>
 @endpush
