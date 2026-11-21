@@ -2,6 +2,7 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\SePayWebhookController;
 use App\Http\Controllers\User\CardDepositController;
 use App\Http\Controllers\DiscountCodeController;
 use Illuminate\Support\Facades\Artisan;
@@ -20,6 +21,10 @@ use Illuminate\Support\Facades\Artisan;
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
+
+Route::post('/webhooks/sepay', SePayWebhookController::class)
+    ->middleware('throttle:120,1')
+    ->name('webhook.sepay');
 
 // Callback thẻ cào từ partner — công khai (partner gọi server-to-server), đã có sign md5 riêng.
 // Thêm throttle để chống abuse.

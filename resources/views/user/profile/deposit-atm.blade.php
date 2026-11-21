@@ -159,14 +159,14 @@
                                                     <div class="step-num">2</div>
                                                     <div class="step-content">
                                                         <h4>Chuyển khoản</h4>
-                                                        <p>Quét QR hoặc chuyển đúng số tiền và nội dung CK.</p>
+                                                        <p>Quét QR hoặc chuyển đúng số tiền và nội dung CK. Nội dung phải bắt đầu bằng <strong>{{ config('sepay.prefix', 'NAP') }}{{ Auth::id() }}</strong>.</p>
                                                     </div>
                                                 </div>
                                                 <div class="step-item">
                                                     <div class="step-num">3</div>
                                                     <div class="step-content">
                                                         <h4>Tự động cộng tiền</h4>
-                                                        <p>Hệ thống xác nhận và cộng tiền trong 1-5 phút.</p>
+                                                        <p>Hệ thống xác nhận và cộng tiền tự động qua webhook HMAC-SHA256 sau khi SePay gửi giao dịch hợp lệ.</p>
                                                     </div>
                                                 </div>
                                             </div>

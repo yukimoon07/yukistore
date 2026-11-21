@@ -16,12 +16,18 @@ class BankDeposit extends Model
         'account_number',
         'amount',
         'content',
-        'bank'
+        'bank',
+        'bank_account_id',
+        'status',
+        'gateway',
+        'gateway_transaction_id',
+        'raw_payload'
     ];
 
     protected $casts = [
         'amount' => 'decimal:0',
-        'bank' => 'string', // Added cast for 'bank'
+        'bank' => 'string',
+        'raw_payload' => 'array',
     ];
 
     /**
