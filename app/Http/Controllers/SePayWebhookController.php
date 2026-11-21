@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\AffiliateHistory;
+use App\Models\BankAccount;
 use App\Models\BankDeposit;
 use App\Models\MoneyTransaction;
 use App\Models\User;
@@ -21,6 +22,8 @@ class SePayWebhookController extends Controller
                 'headers' => [
                     'signature' => $request->header(config('sepay.signature_header', 'X-SePay-Signature')),
                     'timestamp' => $request->header('X-SePay-Timestamp'),
+                    'authorization' => $request->header('Authorization') ? 'Bearer/Apikey [provided]' : null,
+                    'api_key' => $request->header('X-API-Key') ?? $request->header('X-Secret-Key'),
                 ],
             ]);
 
@@ -28,6 +31,11 @@ class SePayWebhookController extends Controller
         }
 
         $payload = $request->json()->all();
+        if (!is_array($payload) || empty($payload)) {
+            // Also check standard form-data / POST input
+            $payload = $request->all();
+        }
+
         if (!is_array($payload) || empty($payload)) {
             return response()->json(['message' => 'Invalid JSON payload'], 422);
         }
@@ -54,30 +62,32 @@ class SePayWebhookController extends Controller
             return response()->json(['message' => 'Ignored: not an incoming transfer']);
         }
 
-        $prefix = (string) config('sepay.prefix', 'NAP');
-        $userId = get_id_bank($prefix, $content);
-
-        // Fallback to parsed payment code from SePay payload if available
-        if ($userId <= 0 && !empty($payload['code'])) {
-            $userId = get_id_bank($prefix, (string) $payload['code']);
-        }
-
-        // Additional fallback: check common prefixes if customized prefix did not match
-        if ($userId <= 0 && strcasecmp($prefix, 'NAP') !== 0) {
-            $userId = get_id_bank('NAP', $content);
-        }
-        if ($userId <= 0 && strcasecmp($prefix, 'naptien') !== 0) {
-            $userId = get_id_bank('naptien', $content);
-        }
+        // Extract user ID from memo using all possible configured and common prefixes
+        $userId = $this->extractUserId($content, $payload);
 
         if ($userId <= 0) {
-            // Acknowledge delivery but do not credit an unrecognised memo.
+            // Check if this is a test delivery from SePay (e.g. id=0 or sample memo)
+            if ($transactionId === '0' || stripos($content, 'DH12345') !== false || stripos($content, 'test') !== false) {
+                Log::info('SePay test webhook acknowledged successfully', [
+                    'transaction_id' => $transactionId,
+                    'content' => $content,
+                ]);
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'SePay test webhook acknowledged',
+                ]);
+            }
+
             Log::notice('SePay webhook ignored: payment code not found', [
                 'transaction_id' => $transactionId,
                 'content' => $content,
             ]);
 
-            return response()->json(['message' => 'Ignored: payment code not found']);
+            return response()->json([
+                'success' => true,
+                'message' => 'Ignored: payment code not found',
+            ]);
         }
 
         try {
@@ -187,7 +197,10 @@ class SePayWebhookController extends Controller
             return response()->json(['message' => 'Temporary processing error'], 500);
         }
 
-        return response()->json(['message' => 'Webhook received']);
+        return response()->json([
+            'success' => true,
+            'message' => 'Webhook received',
+        ]);
     }
 
     private function isAuthenticated(Request $request): bool
@@ -197,15 +210,73 @@ class SePayWebhookController extends Controller
             return false;
         }
 
+        // 1. API Key / Secret Key header & parameter checks
+        $providedKey = null;
+
+        // Authorization header
+        $authHeader = trim((string) $request->header('Authorization'));
+        if ($authHeader !== '') {
+            if (stripos($authHeader, 'Apikey ') === 0) {
+                $providedKey = substr($authHeader, 7);
+            } elseif (stripos($authHeader, 'Bearer ') === 0) {
+                $providedKey = substr($authHeader, 7);
+            } else {
+                $providedKey = $authHeader;
+            }
+        }
+
+        // Custom API Key headers
+        if (!$providedKey) {
+            foreach (['X-API-Key', 'X-Secret-Key', 'Secret-Key', 'X-SePay-API-Key', 'X-Sepay-Api-Key', 'x-api-key'] as $h) {
+                $val = trim((string) $request->header($h));
+                if ($val !== '') {
+                    $providedKey = $val;
+                    break;
+                }
+            }
+        }
+
+        // Query string fallback (?token=... or ?key=... or ?secret=...)
+        if (!$providedKey) {
+            $providedKey = $request->query('token')
+                ?? $request->query('key')
+                ?? $request->query('secret')
+                ?? $request->query('apiKey');
+        }
+
+        // Payload field fallback
+        if (!$providedKey && is_array($request->json()->all())) {
+            $payload = $request->json()->all();
+            $providedKey = $payload['secret'] ?? $payload['apiKey'] ?? $payload['token'] ?? null;
+        }
+
+        if ($providedKey && hash_equals($secret, trim((string) $providedKey))) {
+            return true;
+        }
+
+        // 2. HMAC-SHA256 signature verification (Official SePay method)
         $headerName = (string) config('sepay.signature_header', 'X-SePay-Signature');
-        $providedSignature = trim((string) $request->header($headerName));
+        $signatureHeader = trim((string) ($request->header($headerName) ?? $request->header('x-sepay-signature') ?? ''));
         $rawBody = $request->getContent();
 
-        // 1. HMAC-SHA256 signature verification (Official SePay method)
-        if ($providedSignature !== '' && $rawBody !== '') {
+        if ($signatureHeader !== '' && $rawBody !== '') {
             $timestamp = trim((string) ($request->header('X-SePay-Timestamp') ?? $request->header('x-sepay-timestamp') ?? ''));
+            $cleanSignature = $signatureHeader;
 
-            // Replay attack protection (5-minute window if timestamp is present)
+            // Extract t=... and v1=... (SePay Stripe-compatible format)
+            if (preg_match('/v1=([a-f0-9]+)/i', $signatureHeader, $matchV1)) {
+                $cleanSignature = $matchV1[1];
+            }
+            if (empty($timestamp) && preg_match('/t=(\d+)/i', $signatureHeader, $matchT)) {
+                $timestamp = $matchT[1];
+            }
+
+            // Strip "sha256=" prefix if present
+            if (stripos($cleanSignature, 'sha256=') === 0) {
+                $cleanSignature = substr($cleanSignature, 7);
+            }
+
+            // Replay attack protection (5-minute tolerance if timestamp is present)
             if ($timestamp !== '' && is_numeric($timestamp)) {
                 if (abs(time() - (int) $timestamp) > 300) {
                     Log::warning('SePay webhook rejected: timestamp expired', [
@@ -214,12 +285,6 @@ class SePayWebhookController extends Controller
                     ]);
                     return false;
                 }
-            }
-
-            // Strip "sha256=" prefix if sent by SePay
-            $cleanSignature = $providedSignature;
-            if (str_starts_with(strtolower($cleanSignature), 'sha256=')) {
-                $cleanSignature = substr($cleanSignature, 7);
             }
 
             // Candidates to sign: {timestamp}.{rawBody} OR rawBody directly
@@ -234,36 +299,71 @@ class SePayWebhookController extends Controller
                 $expectedBase64 = base64_encode(hash_hmac('sha256', $candidate, $secret, true));
 
                 if (hash_equals($expectedHex, $cleanSignature) ||
-                    hash_equals('sha256=' . $expectedHex, strtolower($providedSignature)) ||
-                    hash_equals($expectedBase64, $cleanSignature)) {
+                    hash_equals('sha256=' . $expectedHex, strtolower($cleanSignature)) ||
+                    hash_equals($base64Hash = $expectedBase64, $cleanSignature)) {
                     return true;
                 }
             }
-        }
-
-        // 2. Fallback: API Key verification (Authorization: Apikey <KEY> or Bearer <KEY>)
-        $authHeader = trim((string) $request->header('Authorization'));
-        if ($authHeader !== '') {
-            if (str_starts_with($authHeader, 'Apikey ')) {
-                $apiKey = substr($authHeader, 7);
-                if (hash_equals($secret, $apiKey)) {
-                    return true;
-                }
-            } elseif (str_starts_with($authHeader, 'Bearer ')) {
-                $bearer = substr($authHeader, 7);
-                if (hash_equals($secret, $bearer)) {
-                    return true;
-                }
-            }
-        }
-
-        // 3. Fallback: Custom Header API Key
-        $customApiKey = trim((string) ($request->header('X-SePay-API-Key') ?? $request->header('X-API-Key') ?? ''));
-        if ($customApiKey !== '' && hash_equals($secret, $customApiKey)) {
-            return true;
         }
 
         return false;
+    }
+
+    private function extractUserId(string $content, array $payload): int
+    {
+        $prefix = (string) config('sepay.prefix', 'NAP');
+        $userId = get_id_bank($prefix, $content);
+
+        // Check configured prefixes from active bank accounts (e.g. 'yuki')
+        if ($userId <= 0) {
+            try {
+                $dbPrefixes = BankAccount::whereNotNull('prefix')
+                    ->where('prefix', '!=', '')
+                    ->pluck('prefix')
+                    ->unique();
+                foreach ($dbPrefixes as $p) {
+                    $userId = get_id_bank($p, $content);
+                    if ($userId > 0) {
+                        return $userId;
+                    }
+                }
+            } catch (\Throwable $e) {}
+        }
+
+        // Fallback to parsed payment code from SePay payload if available
+        if ($userId <= 0 && !empty($payload['code'])) {
+            $userId = get_id_bank($prefix, (string) $payload['code']);
+            if ($userId <= 0 && isset($dbPrefixes)) {
+                foreach ($dbPrefixes as $p) {
+                    $userId = get_id_bank($p, (string) $payload['code']);
+                    if ($userId > 0) {
+                        return $userId;
+                    }
+                }
+            }
+        }
+
+        // Check common prefixes: 'yuki', 'NAP', 'naptien', 'nap'
+        if ($userId <= 0) {
+            foreach (['yuki', 'NAP', 'naptien', 'nap'] as $commonPrefix) {
+                $userId = get_id_bank($commonPrefix, $content);
+                if ($userId > 0) {
+                    return $userId;
+                }
+            }
+        }
+
+        // Regex fallback: find any word prefix directly followed by digits (e.g. 'yuki1', 'nap12')
+        if ($userId <= 0) {
+            if (preg_match('/[a-zA-Z]+(\d+)/', $content, $matches)) {
+                $candidateId = (int) $matches[1];
+                if ($candidateId > 0 && User::whereKey($candidateId)->exists()) {
+                    return $candidateId;
+                }
+            }
+        }
+
+        return $userId;
     }
 
     private function normaliseBank(string $bankName): string

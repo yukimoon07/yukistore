@@ -145,5 +145,10 @@ Route::any('/nhiem-vu/{any?}', function () {
     return redirect('/');
 })->where('any', '.*');
 
+// Webhook SePay (Hỗ trợ cả trường hợp người dùng cấu hình URL không có /api)
+Route::post('/webhooks/sepay', \App\Http\Controllers\SePayWebhookController::class);
+Route::post('/sepay/webhook', \App\Http\Controllers\SePayWebhookController::class);
+
+
 
 

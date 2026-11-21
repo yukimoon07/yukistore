@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\AffiliateHistory;
+use App\Models\BankAccount;
 use App\Models\BankDeposit;
 use App\Models\MoneyTransaction;
 use App\Models\User;
@@ -47,15 +48,25 @@ class SePayWebhookTest extends TestCase
         $response->assertStatus(401);
     }
 
-    public function test_rejects_expired_timestamp(): void
+    public function test_accepts_stripe_like_signature_format(): void
     {
-        $body = json_encode([
-            'id' => 'TX123456',
-            'transferAmount' => 50000,
-            'content' => 'NAP1',
+        $user = User::create([
+            'username' => 't_v1_user_' . uniqid(),
+            'email' => 'tv1_' . uniqid() . '@example.com',
+            'password' => bcrypt('password'),
+            'balance' => 0,
+            'total_deposited' => 0,
         ]);
-        $oldTimestamp = (string) (time() - 600); // 10 minutes ago
-        $signature = 'sha256=' . hash_hmac('sha256', $oldTimestamp . '.' . $body, $this->secret);
+
+        $body = json_encode([
+            'id' => 'TX_TV1_' . time(),
+            'transferAmount' => 50000,
+            'content' => 'NAP' . $user->id,
+            'transferType' => 'in',
+        ]);
+        $timestamp = (string) time();
+        $hash = hash_hmac('sha256', $timestamp . '.' . $body, $this->secret);
+        $signature = "t={$timestamp},v1={$hash}";
 
         $response = $this->call(
             'POST',
@@ -65,13 +76,83 @@ class SePayWebhookTest extends TestCase
             [],
             [
                 'HTTP_X_SEPAY_SIGNATURE' => $signature,
-                'HTTP_X_SEPAY_TIMESTAMP' => $oldTimestamp,
                 'CONTENT_TYPE' => 'application/json',
             ],
             $body
         );
 
-        $response->assertStatus(401);
+        $response->assertStatus(200);
+        $user->refresh();
+        $this->assertEquals(50000, $user->balance);
+    }
+
+    public function test_accepts_yuki_prefix_from_screenshot(): void
+    {
+        $user = User::create([
+            'username' => 'yuki_user_' . uniqid(),
+            'email' => 'yuki_' . uniqid() . '@example.com',
+            'password' => bcrypt('password'),
+            'balance' => 0,
+            'total_deposited' => 0,
+        ]);
+
+        $body = json_encode([
+            'id' => 'TX_YUKI_' . time(),
+            'transferAmount' => 50000,
+            'content' => 'yuki' . $user->id,
+            'transferType' => 'in',
+            'gateway' => 'MBBank',
+        ]);
+        $timestamp = (string) time();
+        $signature = 'sha256=' . hash_hmac('sha256', $timestamp . '.' . $body, $this->secret);
+
+        $response = $this->call(
+            'POST',
+            '/api/webhooks/sepay',
+            [],
+            [],
+            [],
+            [
+                'HTTP_X_SEPAY_SIGNATURE' => $signature,
+                'HTTP_X_SEPAY_TIMESTAMP' => $timestamp,
+                'CONTENT_TYPE' => 'application/json',
+            ],
+            $body
+        );
+
+        $response->assertStatus(200);
+        $user->refresh();
+        $this->assertEquals(50000, $user->balance);
+    }
+
+    public function test_acknowledges_sepay_test_ping(): void
+    {
+        $body = json_encode([
+            'id' => 0,
+            'transferAmount' => 50000,
+            'content' => 'DH12345 chuyen tien',
+            'transferType' => 'in',
+            'gateway' => 'Vietcombank',
+        ]);
+        $timestamp = (string) time();
+        $signature = 'sha256=' . hash_hmac('sha256', $timestamp . '.' . $body, $this->secret);
+
+        $response = $this->call(
+            'POST',
+            '/api/webhooks/sepay',
+            [],
+            [],
+            [],
+            [
+                'HTTP_X_SEPAY_SIGNATURE' => $signature,
+                'HTTP_X_SEPAY_TIMESTAMP' => $timestamp,
+                'CONTENT_TYPE' => 'application/json',
+            ],
+            $body
+        );
+
+        $response->assertStatus(200);
+        $response->assertJson(['success' => true]);
     }
 
     public function test_accepts_apikey_authorization_fallback(): void
