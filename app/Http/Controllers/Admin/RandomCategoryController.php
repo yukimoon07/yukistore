@@ -55,6 +55,7 @@ class RandomCategoryController extends Controller
     {
         $request->validate([
             'name' => 'required|string|unique:random_categories,name',
+            'price' => 'nullable|numeric|min:0',
             'thumbnail' => 'required|image|mimes:jpeg,png,jpg,gif,webp',
             'tag_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
             'description' => 'nullable|string',
@@ -122,6 +123,7 @@ class RandomCategoryController extends Controller
     {
         $request->validate([
             'name' => 'required|string|unique:random_categories,name,' . $category->id,
+            'price' => 'nullable|numeric|min:0',
             'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp',
             'tag_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
             'description' => 'nullable|string',

@@ -65,6 +65,17 @@
                                     @enderror
                                 </div>
                             </div>
+                            <div class="col-lg-6 col-sm-6 col-12">
+                                <div class="mb-3">
+                                    <label class="form-label">Giá bán niêm yết (VNĐ)</label>
+                                    <input type="number" name="price" value="{{ old('price') }}"
+                                        class="form-control @error('price') is-invalid @enderror"
+                                        placeholder="VD: 2000 (để trống nếu định giá theo từng acc)">
+                                    @error('price')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                            </div>
                             <div class="col-lg-6 col-sm-6 col-12 d-flex align-items-center">
                                 <div class="mb-3 w-100">
                                     <label class="form-label d-block">&nbsp;</label>

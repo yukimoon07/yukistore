@@ -24,7 +24,14 @@ class RandomCategoryController extends Controller
             ->where('status', 'available')
             ->first();
             
-        $price = $sampleAccount ? $sampleAccount->price : 0;
+        $price = $sampleAccount ? (float)$sampleAccount->price : (float)($category->price ?? 0);
+        if ($price <= 0) {
+            if ($category->is_flash_sale && !empty($category->flash_sale_new_price) && $category->flash_sale_new_price > 0) {
+                $price = (float)$category->flash_sale_new_price;
+            } elseif (preg_match('/(\d+)\s*[kK]/u', $category->name, $matches)) {
+                $price = (float) $matches[1] * 1000;
+            }
+        }
         
         $flashSalePrice = \App\Models\FlashSale::getActivePrice('random', $category->id);
         if ($flashSalePrice !== null) {
@@ -91,6 +98,18 @@ class RandomCategoryController extends Controller
                 $accounts->each(function($acc) use ($flashSalePrice) {
                     $acc->price = $flashSalePrice;
                 });
+            } else {
+                $fallbackPrice = ($category->price && $category->price > 0) ? (float)$category->price : 0;
+                if ($fallbackPrice <= 0 && preg_match('/(\d+)\s*[kK]/u', $category->name, $matches)) {
+                    $fallbackPrice = (float) $matches[1] * 1000;
+                }
+                if ($fallbackPrice > 0) {
+                    $accounts->each(function($acc) use ($fallbackPrice) {
+                        if (empty($acc->price) || $acc->price <= 0) {
+                            $acc->price = $fallbackPrice;
+                        }
+                    });
+                }
             }
             
             $totalPrice = $accounts->sum('price');

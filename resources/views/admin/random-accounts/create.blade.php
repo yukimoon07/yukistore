@@ -59,7 +59,7 @@
                                     <div class="alert alert-info py-2 mb-2 d-flex align-items-center justify-content-between" role="alert">
                                         <div>
                                             <i class="ti ti-info-circle me-2 fs-5"></i>
-                                            <small>Mỗi tài khoản một dòng, định dạng: <strong>username|password</strong>. Hoặc <strong>Chúc bạn may mắn lần sau</strong></small>
+                                            <small>Mỗi tài khoản một dòng, định dạng: <strong>username|password</strong> hoặc <strong>username:password</strong>. Hoặc <strong>Chúc bạn may mắn lần sau</strong></small>
                                         </div>
                                         <label for="txtFile" class="btn btn-sm btn-outline-primary mb-0 cursor-pointer">
                                             <i class="ti ti-upload me-1"></i> Tải lên file .txt
@@ -67,7 +67,7 @@
                                         <input type="file" id="txtFile" accept=".txt" style="display: none;" onchange="readTxtFile(this)">
                                     </div>
                                     <textarea name="accounts" id="accountsTextarea" rows="8" class="form-control font-monospace bg-light @error('accounts') is-invalid @enderror"
-                                        placeholder="user1|pass123&#10;user2|pass456&#10;Chúc bạn may mắn lần sau">{{ old('accounts') }}</textarea>
+                                        placeholder="user1|pass123&#10;user2:pass456&#10;Chúc bạn may mắn lần sau">{{ old('accounts') }}</textarea>
                                     @error('accounts')
                                         <div class="invalid-feedback d-block">{{ $message }}</div>
                                     @enderror

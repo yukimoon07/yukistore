@@ -53,19 +53,44 @@ class RandomCategoryAccountController extends Controller
 
     public function store(Request $request)
     {
-        try {
-            $request->validate([
-                'random_category_id' => 'required|exists:random_categories,id',
-                'accounts' => 'required|string',
-                'price' => 'required|numeric|min:0',
-                'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif',
-                'note' => 'nullable|string',
-                'note_buyer' => 'nullable|string',
-            ]);
+        // Validate request: 'price' is optional (nullable), if omitted it will fall back to category price
+        $request->validate([
+            'random_category_id' => 'required|exists:random_categories,id',
+            'accounts' => 'required|string',
+            'price' => 'nullable|numeric|min:0',
+            'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'note' => 'nullable|string',
+            'note_buyer' => 'nullable|string',
+        ]);
 
+        try {
             DB::beginTransaction();
 
             $data = $request->all();
+            $category = RandomCategory::findOrFail($data['random_category_id']);
+
+            // Determine price with robust fallbacks:
+            // 1. Explicit input from form
+            // 2. Active flash sale price
+            // 3. Category base price
+            // 4. Extracted price from category name (e.g., "2K" -> 2000, "200K" -> 200000)
+            if ($request->filled('price')) {
+                $price = (float) $request->input('price');
+            } elseif ($category->is_flash_sale && !empty($category->flash_sale_new_price) && $category->flash_sale_new_price > 0) {
+                $price = (float) $category->flash_sale_new_price;
+            } elseif (!empty($category->price) && $category->price > 0) {
+                $price = (float) $category->price;
+            } elseif (preg_match('/(\d+)\s*[kK]/u', $category->name, $matches)) {
+                $price = (float) $matches[1] * 1000;
+            } else {
+                $price = 0;
+            }
+
+            // If category had 0 price, sync this price back to category so it doesn't display "0 đ"
+            if ((empty($category->price) || $category->price <= 0) && $price > 0) {
+                $category->update(['price' => $price]);
+            }
+
             $accounts = explode("\n", trim($data['accounts']));
             $createdAccounts = [];
             $thumbnailPath = null;
@@ -96,16 +121,34 @@ class RandomCategoryAccountController extends Controller
                 if (empty($accountLine))
                     continue;
 
-                $parts = explode('|', $accountLine);
-                $accountName = trim($parts[0] ?? '');
-                $password = isset($parts[1]) ? trim($parts[1]) : null;
+                // Support multiple delimiters: '|', '----', '\t', ':'
+                if (str_contains($accountLine, '|')) {
+                    $parts = explode('|', $accountLine, 2);
+                    $accountName = trim($parts[0]);
+                    $password = isset($parts[1]) ? trim($parts[1]) : null;
+                } elseif (str_contains($accountLine, '----')) {
+                    $parts = explode('----', $accountLine, 2);
+                    $accountName = trim($parts[0]);
+                    $password = isset($parts[1]) ? trim($parts[1]) : null;
+                } elseif (str_contains($accountLine, "\t")) {
+                    $parts = explode("\t", $accountLine, 2);
+                    $accountName = trim($parts[0]);
+                    $password = isset($parts[1]) ? trim($parts[1]) : null;
+                } elseif (str_contains($accountLine, ':')) {
+                    $parts = explode(':', $accountLine, 2);
+                    $accountName = trim($parts[0]);
+                    $password = isset($parts[1]) ? trim($parts[1]) : null;
+                } else {
+                    $accountName = $accountLine;
+                    $password = null;
+                }
 
                 $accountData = [
                     'random_category_id' => $data['random_category_id'],
                     'account_name' => $accountName,
                     'password' => $password,
                     'server' => 1, // Default value since it was removed from UI
-                    'price' => $data['price'],
+                    'price' => $price,
                     'status' => 'available',
                     'note' => $data['note'] ?? null,
                     'note_buyer' => $data['note_buyer'] ?? null,
@@ -149,19 +192,24 @@ class RandomCategoryAccountController extends Controller
 
     public function update(Request $request, RandomCategoryAccount $account)
     {
-        try {
-            $request->validate([
-                'random_category_id' => 'required|exists:random_categories,id',
-                'account_name' => 'nullable|string|max:100',
-                'password' => 'nullable|string|max:100',
-                'price' => 'required|numeric|min:0',
-                'note' => 'nullable|string',
-                'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif',
-            ]);
+        $request->validate([
+            'random_category_id' => 'required|exists:random_categories,id',
+            'account_name' => 'nullable|string|max:100',
+            'password' => 'nullable|string|max:100',
+            'price' => 'nullable|numeric|min:0',
+            'note' => 'nullable|string',
+            'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+        ]);
 
+        try {
             DB::beginTransaction();
 
             $data = $request->all();
+
+            if (!$request->filled('price')) {
+                $category = RandomCategory::find($data['random_category_id'] ?? $account->random_category_id);
+                $data['price'] = $category->price ?? $account->price ?? 0;
+            }
 
             if ($request->hasFile('thumbnail')) {
                 // Delete old thumbnail if exists

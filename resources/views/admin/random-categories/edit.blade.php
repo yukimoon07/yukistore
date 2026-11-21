@@ -73,8 +73,20 @@
                                     @enderror
                                 </div>
                             </div>
+
+                            <div class="col-lg-6 col-sm-6 col-12">
+                                <div class="mb-3">
+                                    <label class="form-label">Giá bán niêm yết (VNĐ)</label>
+                                    <input type="number" name="price" value="{{ old('price', $category->price) }}"
+                                        class="form-control @error('price') is-invalid @enderror"
+                                        placeholder="VD: 2000 (để trống nếu định giá theo từng acc)">
+                                    @error('price')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                            </div>
                             
-                            <div class="col-lg-12 d-flex align-items-center mb-3">
+                            <div class="col-lg-6 col-sm-6 col-12 d-flex align-items-center mb-3">
                                 <div class="form-check form-switch mt-2">
                                     <input class="form-check-input" type="checkbox" name="active" id="active" value="1" {{ old('active', $category->active) ? 'checked' : '' }}>
                                     <label class="form-check-label fw-semibold" for="active">Kích hoạt hiển thị</label>
