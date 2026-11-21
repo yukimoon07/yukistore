@@ -50,6 +50,13 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
 Route::prefix('admin')->middleware(['auth', 'admin'])->name('admin.')->group(function () {
     Route::get('/', [App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('index');
+    Route::get('/clear-cache', function () {
+        \Illuminate\Support\Facades\Artisan::call('config:clear');
+        \Illuminate\Support\Facades\Artisan::call('route:clear');
+        \Illuminate\Support\Facades\Artisan::call('cache:clear');
+        \Illuminate\Support\Facades\Artisan::call('view:clear');
+        return redirect()->back()->with('success', 'Đã xóa toàn bộ cache hệ thống thành công!');
+    })->name('clear-cache');
     Route::get('/affiliates', [AffiliateController::class, 'index'])->name('affiliates.index');
     Route::prefix('users')->name('users.')->group(function () {
         Route::get('/', [UserController::class, 'index'])->name('index');
