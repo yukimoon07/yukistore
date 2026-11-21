@@ -232,9 +232,10 @@ class ProfileController extends Controller
             ->get();
 
         // Ensure each bank account has a prefix
+        $defaultPrefix = config('sepay.prefix', 'NAP');
         foreach ($bankAccounts as $account) {
             if (empty($account->prefix)) {
-                $account->prefix = 'NAP' . $request->user()->id;
+                $account->prefix = $defaultPrefix;
             }
         }
 

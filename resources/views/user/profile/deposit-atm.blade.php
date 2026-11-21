@@ -385,7 +385,8 @@
 
                 btnSubmit.addEventListener('click', function() {
                     const amount = inputAmount.value;
-                    const content = selectedBank.prefix + userId;
+                    const basePrefix = (selectedBank.prefix || '{{ config('sepay.prefix', 'NAP') }}').trim().replace(/\d+$/, '');
+                    const content = (basePrefix || 'NAP') + userId;
                     
                     document.getElementById('qr-bank').textContent = selectedBank.bank;
                     document.getElementById('qr-name').textContent = selectedBank.name;

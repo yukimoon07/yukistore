@@ -32,6 +32,12 @@ return new class extends Migration {
         Schema::table('bank_deposits', function (Blueprint $table) {
             $table->unique('gateway_transaction_id');
         });
+
+        try {
+            \Illuminate\Support\Facades\DB::statement("ALTER TABLE bank_deposits MODIFY COLUMN bank VARCHAR(100) NOT NULL DEFAULT 'SePay'");
+        } catch (\Throwable $e) {
+            // Ignore if already string or not supported in this environment
+        }
     }
 
     public function down(): void
